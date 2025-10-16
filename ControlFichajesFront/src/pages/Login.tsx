@@ -1,4 +1,4 @@
-// pages/Login.tsx
+// src/pages/Login.tsx
 import { Box, Paper, TextField, Button, Typography, Stack, Alert } from "@mui/material";
 import { useState } from "react";
 import { login } from "../api/auth";
@@ -33,7 +33,7 @@ export default function Login() {
         position: "fixed",
         top: "50%",
         left: "50%",
-        transform: "translate(-50%, calc(-50% + 32px))", // +32px para compensar parte del AppBar si lo ves muy arriba
+        transform: "translate(-50%, -50%)", // centrado perfecto
         width: "100%",
         px: 2, // margen lateral en móvil
       }}
@@ -44,11 +44,11 @@ export default function Login() {
           p: { xs: 2, sm: 3 },
           borderRadius: 3,
           width: "100%",
-          maxWidth: 640, // ajusta: 560/600/640/680
+          maxWidth: 640,
           mx: "auto",
         }}
       >
-        <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
           Iniciar sesión
         </Typography>
 
