@@ -35,18 +35,14 @@ namespace ControlFichajesAPI.Data
                 entity.ToTable("Fichajes");
                 entity.HasKey(e => e.Id_Fichaje);
                 entity.Property(e => e.Id_Fichaje).HasColumnName("Id_Fichaje");
-                entity.Property(e => e.IdUsuario).HasColumnName("IdUsuario"); // sin guion bajo
+                entity.Property(e => e.IdUsuario).HasColumnName("Id_Usuario"); // columna real
                 entity.Property(e => e.Fecha).HasColumnName("Fecha");
                 entity.Property(e => e.Hora_Entrada).HasColumnName("Hora_Entrada");
                 entity.Property(e => e.Hora_Salida).HasColumnName("Hora_Salida");
                 entity.Property(e => e.Tiempo_Pausa).HasColumnName("Tiempo_Pausa");
                 entity.Property(e => e.Tipo_Jornada).HasColumnName("Tipo_Jornada");
 
-                // Relación con Usuario
-                entity.HasOne(f => f.Usuario)
-                      .WithMany()
-                      .HasForeignKey(f => f.IdUsuario)
-                      .OnDelete(DeleteBehavior.Cascade);
+                // Importante: NO configurar relaciones aquí mientras no usemos navegación
             });
 
             // Incidencia
@@ -55,17 +51,17 @@ namespace ControlFichajesAPI.Data
                 entity.ToTable("Incidencias");
                 entity.HasKey(e => e.Id_Incidencia);
                 entity.Property(e => e.Id_Incidencia).HasColumnName("Id_Incidencia");
-                entity.Property(e => e.IdUsuario).HasColumnName("IdUsuario"); // sin guion bajo
+                entity.Property(e => e.IdUsuario).HasColumnName("Id_Usuario"); // columna real
+                // Ajusta estos nombres a tu esquema real:
+                // Si tu tabla usa 'Fecha' y 'Descripcion' como en tu contexto anterior,
+                // mapea tal cual. Si tu BD tiene 'FechaReporte' y 'Comentario' como en el doc,
+                // cambia abajo.
                 entity.Property(e => e.Fecha).HasColumnName("Fecha");
                 entity.Property(e => e.Tipo).HasColumnName("Tipo");
                 entity.Property(e => e.Descripcion).HasColumnName("Descripcion");
                 entity.Property(e => e.Estado).HasColumnName("Estado");
 
-                // Relación con Usuario
-                entity.HasOne(i => i.Usuario)
-                      .WithMany()
-                      .HasForeignKey(i => i.IdUsuario)
-                      .OnDelete(DeleteBehavior.Cascade);
+                // Importante: NO configurar relaciones aquí mientras no usemos navegación
             });
         }
     }

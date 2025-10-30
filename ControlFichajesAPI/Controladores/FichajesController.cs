@@ -1,3 +1,4 @@
+// Controladores/FichajesController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace ControlFichajesAPI.Controladores
 
         public FichajesController(AppDbContext ctx) => _ctx = ctx;
 
+        // GET /api/fichajes
         [HttpGet]
         public async Task<IActionResult> GetFichajes()
         {
@@ -35,7 +37,7 @@ namespace ControlFichajesAPI.Controladores
 
             var mine = await _ctx.Fichajes
                 .AsNoTracking()
-                .Where(f => f.IdUsuario == idUsuario.Value)    // <- IdUsuario
+                .Where(f => f.IdUsuario == idUsuario.Value)
                 .OrderByDescending(f => f.Fecha)
                 .ThenByDescending(f => f.Id_Fichaje)
                 .ToListAsync();
@@ -43,6 +45,7 @@ namespace ControlFichajesAPI.Controladores
             return Ok(mine);
         }
 
+        // GET /api/fichajes/{id}
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -51,12 +54,48 @@ namespace ControlFichajesAPI.Controladores
             var fichaje = await _ctx.Fichajes.FindAsync(id);
             if (fichaje == null) return NotFound();
 
-            if (rol != "admin" && fichaje.IdUsuario != idUsuario) // <- IdUsuario
+            if (rol != "admin" && fichaje.IdUsuario != idUsuario)
                 return Forbid();
 
             return Ok(fichaje);
         }
 
+        // NUEVO: GET /api/fichajes/historial?idUsuario=&desde=&hasta=
+        [HttpGet("historial")]
+        public async Task<IActionResult> GetHistorial(
+            [FromQuery] int? idUsuario,
+            [FromQuery] string? desde = null,
+            [FromQuery] string? hasta = null)
+        {
+            var (userId, rol) = GetAuthInfo(User);
+
+            // Si es empleado, solo puede ver su propio historial
+            if (rol != "admin")
+            {
+                if (userId == null) return Forbid();
+                idUsuario = userId.Value;
+            }
+
+            var q = _ctx.Fichajes.AsNoTracking().AsQueryable();
+
+            if (idUsuario.HasValue)
+                q = q.Where(f => f.IdUsuario == idUsuario.Value);
+
+            if (!string.IsNullOrWhiteSpace(desde) && DateTime.TryParse(desde, out var dDesde))
+                q = q.Where(f => f.Fecha >= DateTime.SpecifyKind(dDesde, DateTimeKind.Utc));
+
+            if (!string.IsNullOrWhiteSpace(hasta) && DateTime.TryParse(hasta, out var dHasta))
+                q = q.Where(f => f.Fecha <= DateTime.SpecifyKind(dHasta, DateTimeKind.Utc));
+
+            var lista = await q
+                .OrderByDescending(f => f.Fecha)
+                .ThenByDescending(f => f.Id_Fichaje)
+                .ToListAsync();
+
+            return Ok(lista);
+        }
+
+        // POST /api/fichajes
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Fichaje dto)
         {
@@ -65,7 +104,7 @@ namespace ControlFichajesAPI.Controladores
             if (rol != "admin")
             {
                 if (idUsuario == null) return Forbid();
-                dto.IdUsuario = idUsuario.Value; // <- forzar dueño si no es admin
+                dto.IdUsuario = idUsuario.Value; // fuerza dueño
             }
 
             dto.Fecha = DateTime.SpecifyKind(dto.Fecha, DateTimeKind.Utc);
@@ -75,6 +114,7 @@ namespace ControlFichajesAPI.Controladores
             return CreatedAtAction(nameof(GetById), new { id = dto.Id_Fichaje }, dto);
         }
 
+        // PUT /api/fichajes/{id}
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] Fichaje input)
         {
@@ -85,7 +125,7 @@ namespace ControlFichajesAPI.Controladores
             var db = await _ctx.Fichajes.FindAsync(id);
             if (db == null) return NotFound();
 
-            if (rol != "admin" && db.IdUsuario != idUsuario) // <- IdUsuario
+            if (rol != "admin" && db.IdUsuario != idUsuario)
                 return Forbid();
 
             db.Fecha = DateTime.SpecifyKind(input.Fecha, DateTimeKind.Utc);
@@ -95,12 +135,13 @@ namespace ControlFichajesAPI.Controladores
             db.Tipo_Jornada = input.Tipo_Jornada;
 
             if (rol == "admin")
-                db.IdUsuario = input.IdUsuario; // <- admin puede reasignar
+                db.IdUsuario = input.IdUsuario;
 
             await _ctx.SaveChangesAsync();
             return Ok(db);
         }
 
+        // DELETE /api/fichajes/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -109,7 +150,7 @@ namespace ControlFichajesAPI.Controladores
             var fichaje = await _ctx.Fichajes.FindAsync(id);
             if (fichaje == null) return NotFound();
 
-            if (rol != "admin" && fichaje.IdUsuario != idUsuario) // <- IdUsuario
+            if (rol != "admin" && fichaje.IdUsuario != idUsuario)
                 return Forbid();
 
             _ctx.Fichajes.Remove(fichaje);
@@ -124,5 +165,6 @@ namespace ControlFichajesAPI.Controladores
             var rol = (user.FindFirstValue(ClaimTypes.Role) ?? "empleado").ToLowerInvariant();
             return (id, rol);
         }
+        
     }
 }

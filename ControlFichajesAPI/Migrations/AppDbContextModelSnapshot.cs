@@ -54,7 +54,7 @@ namespace ControlFichajesAPI.Migrations
                     b.HasIndex("IdUsuario", "Fecha")
                         .HasDatabaseName("IX_Fichajes_IdUsuario_Fecha");
 
-                    b.ToTable("Fichajes");
+                    b.ToTable("Fichajes", (string)null);
                 });
 
             modelBuilder.Entity("ControlFichajesAPI.Models.Incidencia", b =>
@@ -89,7 +89,7 @@ namespace ControlFichajesAPI.Migrations
                     b.HasIndex("IdUsuario", "FechaReporte")
                         .HasDatabaseName("IX_Incidencias_IdUsuario_FechaReporte");
 
-                    b.ToTable("Incidencias");
+                    b.ToTable("Incidencias", (string)null);
                 });
 
             modelBuilder.Entity("ControlFichajesAPI.Models.Usuario", b =>
@@ -126,7 +126,7 @@ namespace ControlFichajesAPI.Migrations
 
                     b.HasKey("Id_Usuario");
 
-                    b.ToTable("Usuarios");
+                    b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("ControlFichajesAPI.Models.Fichaje", b =>

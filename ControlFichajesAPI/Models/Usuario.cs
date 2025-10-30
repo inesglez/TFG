@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,8 +16,5 @@ namespace ControlFichajesAPI.Models
 
         public string Rol { get; set; } = "empleado";
         public string Estado { get; set; } = "activo";
-
-        public ICollection<Fichaje>? Fichajes { get; set; }
-        public ICollection<Incidencia>? Incidencias { get; set; }
     }
 }
