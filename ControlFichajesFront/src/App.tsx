@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Button, Box, IconButton } from "@mui/material";
 import Dashboard from "./pages/Dashboard";
 import Fichar from "./pages/Fichar";
@@ -10,9 +10,9 @@ import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import { useColorModeContext } from "./theme/ColorModeContext";
 import { getAuth, isAdmin, clearAuth, isLoggedIn } from "./auth";
 import { PrivateRoute, AdminRoute } from "./components/RouteGuards";
-import AdminHome from "./pages/admin/AdminHome";
 import AdminIncidencias from "./pages/admin/AdminIncidencias";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function TopBar() {
   const { mode, toggleMode } = useColorModeContext();
@@ -31,7 +31,6 @@ function TopBar() {
       borderBottom: theme.palette.mode === "light"
         ? "1px solid rgba(15, 23, 42, 0.08)"
         : "1px solid rgba(229, 231, 235, 0.12)",
-      backdropFilter: "none",
       borderRadius: 0,
       boxShadow: theme.shadows[1],
     })}>
@@ -42,12 +41,16 @@ function TopBar() {
 
         {isLoggedIn() && (
           <>
-            <Button sx={{ color: "inherit" }} component={Link} to="/">Dashboard</Button>
-            <Button sx={{ color: "inherit" }} component={Link} to="/fichar">Fichar</Button>
-            <Button sx={{ color: "inherit" }} component={Link} to="/incidencias">Incidencias</Button>
+            <Button sx={{ color: "inherit" }} component={Link} to="/">Inicio</Button>
+            {!isAdmin() && (
+              <>
+                <Button sx={{ color: "inherit" }} component={Link} to="/fichar">Fichar</Button>
+                <Button sx={{ color: "inherit" }} component={Link} to="/incidencias">Incidencias</Button>
+              </>
+            )}
             {isAdmin() && (
               <>
-                <Button sx={{ color: "inherit" }} component={Link} to="/admin">Admin</Button>
+                <Button sx={{ color: "inherit" }} component={Link} to="/admin">Panel admin</Button>
                 <Button sx={{ color: "inherit" }} component={Link} to="/admin/incidencias">Incidencias</Button>
                 <Button sx={{ color: "inherit" }} component={Link} to="/admin/usuarios">Usuarios</Button>
               </>
@@ -69,35 +72,50 @@ function TopBar() {
   );
 }
 
-export default function App() {
-  const APPBAR_HEIGHT = 64;
+function HomeRouter() {
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  return isAdmin() ? <Navigate to="/admin" replace /> : <Navigate to="/usuario" replace />;
+}
 
+export default function App() {
   return (
     <BrowserRouter>
       <TopBar />
       <Box
         component="main"
         sx={{
-          pt: `${APPBAR_HEIGHT}px`,
-          minHeight: `calc(100dvh - ${APPBAR_HEIGHT}px)`,
+          // Alto total de la ventana
+          minHeight: "100vh",
+          height: "100%",
           width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          px: { xs: 2, sm: 3 },
+          maxWidth: "100%",
+          m: 0,
+          p: 0,
+          boxSizing: "border-box",
+          overflowX: "hidden",
           bgcolor: "background.default",
         }}
       >
-        <Box sx={{ width: "100%", maxWidth: { xs: 720, sm: 840, md: 1100 } }}>
+        {/* Wrapper fluido con padding en porcentaje y margen superior en % para despegar del AppBar */}
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
+            height: "100%",
+            boxSizing: "border-box",
+            mx: "0%",                         // sin márgenes laterales
+            mt: { xs: "7%", sm: "6%", md: "5%" }, // separa del AppBar en % (ajusta si hace falta)
+            px: { xs: "3%", sm: "3%", md: "3%" }, // padding lateral en %
+            py: { xs: "2%", sm: "2%", md: "2%" }, // padding vertical en %
+          }}
+        >
           <Routes>
-            {/* Público */}
             <Route path="/login" element={<Login />} />
-            {/* Usuario */}
-            <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/" element={<HomeRouter />} />
+            <Route path="/usuario" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/fichar" element={<PrivateRoute><Fichar /></PrivateRoute>} />
             <Route path="/incidencias" element={<PrivateRoute><Incidencias /></PrivateRoute>} />
-            {/* Admin */}
-            <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/incidencias" element={<AdminRoute><AdminIncidencias /></AdminRoute>} />
             <Route path="/admin/usuarios" element={<AdminRoute><AdminUsuarios /></AdminRoute>} />
           </Routes>

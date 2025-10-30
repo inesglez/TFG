@@ -37,7 +37,7 @@ function chipFor(tipo: string) {
 }
 
 export default function Dashboard() {
-  const auth = getAuth(); // <- lee objeto { idUsuario, nombre, rol, token }
+  const auth = getAuth();
   const idUsuario = auth?.idUsuario ?? 0;
   const [items, setItems] = useState<Fichaje[]>([]);
   const theme = useTheme();
@@ -45,9 +45,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!idUsuario) return;
-    getHistorial(idUsuario)
-      .then(setItems)
-      .catch(console.error);
+    getHistorial(idUsuario).then(setItems).catch(console.error);
   }, [idUsuario]);
 
   const totalPausa = useMemo(
@@ -61,39 +59,47 @@ export default function Dashboard() {
         elevation={8}
         sx={{
           width: "100%",
-          maxWidth: 960,
+          // sin maxWidth fijo; si quieres limitar en %:
+          // maxWidth: "90%",
           mx: "auto",
-          p: { xs: 2, sm: 3 },
-          borderRadius: 3,
+          p: { xs: "3%", sm: "2.5%", md: "2%" },   // padding en %
+          borderRadius: "2%",                      // radio en %
+          boxSizing: "border-box",
         }}
       >
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          justifyContent="space-between"
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          spacing={1}
-          sx={{ mb: 2 }}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: "1.5%",                            // separación en %
+            mb: "2%",                               // margen inferior en %
+          }}
         >
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>Historial de fichajes</Typography>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              Historial de fichajes
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Registros recientes del usuario #{idUsuario || "—"}
             </Typography>
           </Box>
-          <Stack direction="row" spacing={1} sx={{ mt: { xs: 1, sm: 0 } }}>
+
+          <Box sx={{ display: "flex", gap: "1%", mt: { xs: "1%", sm: "0%" } }}>
             <Chip label={`${items.length} registros`} size="small" color="primary" variant="outlined" />
             <Chip label={`${totalPausa} min pausa`} size="small" color="secondary" variant="outlined" />
-          </Stack>
-        </Stack>
+          </Box>
+        </Box>
 
         {!idUsuario ? (
-          <Box sx={{ py: 6, textAlign: "center" }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>Inicia sesión</Typography>
+          <Box sx={{ py: "6%", textAlign: "center" }}>
+            <Typography variant="h6" sx={{ mb: "1%" }}>Inicia sesión</Typography>
             <Typography color="text.secondary">Accede para ver tu historial.</Typography>
           </Box>
         ) : items.length === 0 ? (
-          <Box sx={{ py: 6, textAlign: "center" }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>No hay fichajes aún</Typography>
+          <Box sx={{ py: "6%", textAlign: "center" }}>
+            <Typography variant="h6" sx={{ mb: "1%" }}>No hay fichajes aún</Typography>
             <Typography color="text.secondary">Cuando registres tu primer fichaje, aparecerá aquí.</Typography>
           </Box>
         ) : (
@@ -117,8 +123,16 @@ export default function Dashboard() {
                         <TableRow
                           key={f.id_Fichaje}
                           sx={{
-                            bgcolor: idx % 2 ? (theme.palette.mode === "light" ? "rgba(15,23,42,0.02)" : "rgba(255,255,255,0.04)") : "transparent",
-                            "&:hover": { bgcolor: theme.palette.mode === "light" ? "rgba(37,99,235,0.06)" : "rgba(96,165,250,0.12)" },
+                            bgcolor: idx % 2
+                              ? (theme.palette.mode === "light"
+                                  ? "rgba(15,23,42,0.02)"
+                                  : "rgba(255,255,255,0.04)")
+                              : "transparent",
+                            "&:hover": {
+                              bgcolor: theme.palette.mode === "light"
+                                ? "rgba(37,99,235,0.06)"
+                                : "rgba(96,165,250,0.12)",
+                            },
                           }}
                         >
                           <TableCell>
@@ -144,8 +158,7 @@ export default function Dashboard() {
                 </Table>
               </Box>
             ) : (
-              // Móvil: tarjetas compactas
-              <Stack divider={<Divider flexItem sx={{ opacity: 0.5 }} />} spacing={1}>
+              <Stack divider={<Divider flexItem sx={{ opacity: 0.5 }} />} spacing={0} sx={{ gap: "1%" }}>
                 {items.map((f) => {
                   const info = chipFor(f.tipo_Jornada);
                   return (
@@ -154,11 +167,12 @@ export default function Dashboard() {
                       sx={{
                         display: "grid",
                         gridTemplateColumns: "1fr auto",
-                        gap: 1,
-                        p: 1.5,
-                        borderRadius: 2,
+                        gap: "2%",
+                        p: "2%",
+                        borderRadius: "2%",
                         bgcolor: theme.palette.mode === "light" ? "#fff" : "rgba(255,255,255,0.04)",
-                        border: `1px solid ${theme.palette.divider}`,
+                        border: `0.1rem solid ${theme.palette.divider}`, // relativo (no px)
+                        boxSizing: "border-box",
                       }}
                     >
                       <Box>
