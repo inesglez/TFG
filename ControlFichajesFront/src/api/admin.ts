@@ -34,13 +34,13 @@ export type IncidenciaAdmin = {
 // ---------- FICHAJES ----------
 export async function getFichajesHoy(): Promise<FichajeAdmin[]> {
   // Backend sugerido: GET /api/admin/fichajes/hoy
-  const { data } = await http.get<FichajeAdmin[]>("/api/admin/fichajes/hoy");
+  const { data } = await http.get<FichajeAdmin[]>("/admin/fichajes/hoy");
   return data;
 }
 
 export async function getFichajesRango(desdeISO: string, hastaISO: string): Promise<FichajeAdmin[]> {
   // Backend sugerido: GET /api/admin/fichajes?desde=YYYY-MM-DD&hasta=YYYY-MM-DD
-  const { data } = await http.get<FichajeAdmin[]>("/api/admin/fichajes", {
+  const { data } = await http.get<FichajeAdmin[]>("/admin/fichajes", {
     params: { desde: desdeISO, hasta: hastaISO },
   });
   return data;
@@ -51,7 +51,7 @@ export async function getIncidenciasAdmin(
   estado?: "pendiente" | "resuelta" | "en_proceso"
 ): Promise<IncidenciaAdmin[]> {
   // Backend sugerido: GET /api/admin/incidencias?estado=pendiente
-  const { data } = await http.get<IncidenciaAdmin[]>("/api/admin/incidencias", {
+  const { data } = await http.get<IncidenciaAdmin[]>("/admin/incidencias", {
     params: estado ? { estado } : undefined,
   });
   return data;
@@ -68,7 +68,7 @@ export async function updateEstadoIncidencia(
 // ---------- USUARIOS ----------
 export async function getUsuarios(): Promise<UsuarioLite[]> {
   // Backend sugerido: GET /api/admin/usuarios
-  const { data } = await http.get<UsuarioLite[]>("/api/admin/usuarios");
+  const { data } = await http.get<UsuarioLite[]>("/admin/usuarios");
   return data;
 }
 
@@ -79,7 +79,7 @@ export async function createUsuario(payload: {
   rol: "admin" | "empleado";
 }): Promise<UsuarioLite> {
   // Backend sugerido: POST /api/admin/usuarios
-  const { data } = await http.post<UsuarioLite>("/api/admin/usuarios", payload);
+  const { data } = await http.post<UsuarioLite>("/admin/usuarios", payload);
   return data;
 }
 

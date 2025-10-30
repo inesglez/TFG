@@ -5,6 +5,7 @@ import {
   Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody,
   Box, Chip, Stack, Divider, Tooltip, useTheme, useMediaQuery
 } from "@mui/material";
+import { getAuth } from "../auth";
 
 type Fichaje = {
   id_Fichaje: number;
@@ -36,17 +37,23 @@ function chipFor(tipo: string) {
 }
 
 export default function Dashboard() {
-  const idUsuario = Number(localStorage.getItem("idUsuario") ?? 0);
+  const auth = getAuth(); // <- lee objeto { idUsuario, nombre, rol, token }
+  const idUsuario = auth?.idUsuario ?? 0;
   const [items, setItems] = useState<Fichaje[]>([]);
   const theme = useTheme();
   const isUpSm = useMediaQuery(theme.breakpoints.up("sm"));
 
   useEffect(() => {
     if (!idUsuario) return;
-    getHistorial(idUsuario).then(setItems).catch(console.error);
+    getHistorial(idUsuario)
+      .then(setItems)
+      .catch(console.error);
   }, [idUsuario]);
 
-  const totalPausa = useMemo(() => items.reduce((acc, i) => acc + (i.tiempo_Pausa || 0), 0), [items]);
+  const totalPausa = useMemo(
+    () => items.reduce((acc, i) => acc + (i.tiempo_Pausa || 0), 0),
+    [items]
+  );
 
   return (
     <Box sx={{ width: "100%" }}>
