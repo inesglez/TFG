@@ -13,6 +13,7 @@ import { PrivateRoute, AdminRoute } from "./components/RouteGuards";
 import AdminIncidencias from "./pages/admin/AdminIncidencias";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
 import AdminDashboard from "./pages/AdminDashboard";
+import FichajesHoy from "./pages/admin/FichajesHoy";
 
 function TopBar() {
   const { mode, toggleMode } = useColorModeContext();
@@ -53,6 +54,7 @@ function TopBar() {
                 <Button sx={{ color: "inherit" }} component={Link} to="/admin">Panel admin</Button>
                 <Button sx={{ color: "inherit" }} component={Link} to="/admin/incidencias">Incidencias</Button>
                 <Button sx={{ color: "inherit" }} component={Link} to="/admin/usuarios">Usuarios</Button>
+                <Button sx={{ color: "inherit" }} component={Link} to="/admin/fichajes-hoy">Fichajes hoy</Button>
               </>
             )}
           </>
@@ -84,7 +86,6 @@ export default function App() {
       <Box
         component="main"
         sx={{
-          // Alto total de la ventana
           minHeight: "100vh",
           height: "100%",
           width: "100%",
@@ -96,17 +97,16 @@ export default function App() {
           bgcolor: "background.default",
         }}
       >
-        {/* Wrapper fluido con padding en porcentaje y margen superior en % para despegar del AppBar */}
         <Box
           sx={{
             width: "100%",
             maxWidth: "100%",
             height: "100%",
             boxSizing: "border-box",
-            mx: "0%",                         // sin márgenes laterales
-            mt: { xs: "7%", sm: "6%", md: "5%" }, // separa del AppBar en % (ajusta si hace falta)
-            px: { xs: "3%", sm: "3%", md: "3%" }, // padding lateral en %
-            py: { xs: "2%", sm: "2%", md: "2%" }, // padding vertical en %
+            mx: "0%",
+            mt: { xs: "7%", sm: "6%", md: "5%" },
+            px: { xs: "3%", sm: "3%", md: "3%" },
+            py: { xs: "2%", sm: "2%", md: "2%" },
           }}
         >
           <Routes>
@@ -118,6 +118,7 @@ export default function App() {
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/incidencias" element={<AdminRoute><AdminIncidencias /></AdminRoute>} />
             <Route path="/admin/usuarios" element={<AdminRoute><AdminUsuarios /></AdminRoute>} />
+            <Route path="/admin/fichajes-hoy" element={<AdminRoute><FichajesHoy /></AdminRoute>} />
           </Routes>
         </Box>
       </Box>

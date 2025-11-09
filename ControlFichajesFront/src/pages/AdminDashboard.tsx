@@ -106,7 +106,7 @@ export default function AdminDashboard() {
         {/* Item 1 */}
         <Box
           sx={{
-            gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" }, // xs 1col, sm 2col, md 4col
+            gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" },
           }}
         >
           <CardAction
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
           />
         </Box>
 
-        {/* Item 4 */}
+        {/* Item 4 - 🔥 CORREGIDO */}
         <Box
           sx={{
             gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" },
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
             subtitle="Entradas/Salidas y tiempos"
             icon={<AccessTimeOutlinedIcon />}
             color="info"
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate("/admin/fichajes-hoy")}
           />
         </Box>
       </Box>
