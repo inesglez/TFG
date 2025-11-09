@@ -1,34 +1,28 @@
-// Models/Fichaje.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ControlFichajesAPI.Models
 {
-    [Table("Fichajes")]
+    [Table("fichajes")]
     public class Fichaje
     {
         [Key]
-        [Column("Id_Fichaje")]
+        [Column("id_fichaje")]
         public int Id_Fichaje { get; set; }
 
-        [Column("Id_Usuario")]
+        [Column("id_usuario")]
         public int IdUsuario { get; set; }
 
-        // Fecha del día al que corresponde el fichaje (UTC)
-        [Column("Fecha")]
+        [Column("fecha", TypeName = "date")]  // 🔥 CAMBIO AQUÍ
         public DateTime Fecha { get; set; }
 
-        // Tiempos; si en tu BD son TIME, en C# típicamente se usa TimeSpan?
-        [Column("Hora_Entrada")]
+        [Column("hora_entrada")]
         public TimeSpan? Hora_Entrada { get; set; }
 
-        [Column("Hora_Salida")]
+        [Column("hora_salida")]
         public TimeSpan? Hora_Salida { get; set; }
 
-        [Column("Tiempo_Pausa")]
-        public TimeSpan? Tiempo_Pausa { get; set; }
-
-        [Column("Tipo_Jornada")]
-        public string? Tipo_Jornada { get; set; }
+        [Column("tiempo_pausa")]
+        public int? Tiempo_Pausa { get; set; }
     }
 }

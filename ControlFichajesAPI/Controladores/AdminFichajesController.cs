@@ -21,7 +21,7 @@ namespace ControlFichajesAPI.Controladores
                 from f in _ctx.Fichajes
                 where f.Fecha.Date == hoyUtc
                 join u in _ctx.Usuarios on f.IdUsuario equals u.Id_Usuario into gj
-                from u in gj.DefaultIfEmpty() // LEFT JOIN
+                from u in gj.DefaultIfEmpty()
                 select new
                 {
                     id_Fichaje = f.Id_Fichaje,
@@ -37,8 +37,8 @@ namespace ControlFichajesAPI.Controladores
                     fecha = f.Fecha.ToString("yyyy-MM-dd"),
                     hora_Entrada = f.Hora_Entrada,
                     hora_Salida = f.Hora_Salida,
-                    tiempo_Pausa = f.Tiempo_Pausa,
-                    tipo_Jornada = f.Tipo_Jornada
+                    tiempo_Pausa = f.Tiempo_Pausa
+                    // tipo_Jornada = f.Tipo_Jornada // ❌ eliminado
                 };
 
             var fichajes = await q
@@ -69,7 +69,7 @@ namespace ControlFichajesAPI.Controladores
                     usuario = u == null ? null : new
                     {
                         idUsuario = u.Id_Usuario,
-                        usuario = u.Correo, // si quieres mostrar el correo como identificador
+                        usuario = u.Correo,
                         nombre = u.Nombre,
                         apellido = u.Apellido,
                         correo = u.Correo,
@@ -79,8 +79,8 @@ namespace ControlFichajesAPI.Controladores
                     fecha = f.Fecha.ToString("yyyy-MM-dd"),
                     hora_Entrada = f.Hora_Entrada,
                     hora_Salida = f.Hora_Salida,
-                    tiempo_Pausa = f.Tiempo_Pausa,
-                    tipo_Jornada = f.Tipo_Jornada
+                    tiempo_Pausa = f.Tiempo_Pausa
+                    // tipo_Jornada = f.Tipo_Jornada // ❌ eliminado
                 };
 
             var fichajes = await q

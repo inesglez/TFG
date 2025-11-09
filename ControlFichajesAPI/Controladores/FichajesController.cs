@@ -1,4 +1,3 @@
-// Controladores/FichajesController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +25,8 @@ namespace ControlFichajesAPI.Controladores
 
             if (rol == "admin")
             {
-                var all = await _ctx.Fichajes.AsNoTracking()
+                var all = await _ctx.Fichajes
+                    .AsNoTracking()
                     .OrderByDescending(f => f.Fecha)
                     .ThenByDescending(f => f.Id_Fichaje)
                     .ToListAsync();
@@ -60,7 +60,7 @@ namespace ControlFichajesAPI.Controladores
             return Ok(fichaje);
         }
 
-        // NUEVO: GET /api/fichajes/historial?idUsuario=&desde=&hasta=
+        // GET /api/fichajes/historial?idUsuario=&desde=&hasta=
         [HttpGet("historial")]
         public async Task<IActionResult> GetHistorial(
             [FromQuery] int? idUsuario,
@@ -69,7 +69,7 @@ namespace ControlFichajesAPI.Controladores
         {
             var (userId, rol) = GetAuthInfo(User);
 
-            // Si es empleado, solo puede ver su propio historial
+            // Si es empleado, solo ve su historial
             if (rol != "admin")
             {
                 if (userId == null) return Forbid();
@@ -81,11 +81,18 @@ namespace ControlFichajesAPI.Controladores
             if (idUsuario.HasValue)
                 q = q.Where(f => f.IdUsuario == idUsuario.Value);
 
+            // ✅ CORRECCIÓN DEFINITIVA - Con UTC porque tu columna es 'timestamp with time zone'
             if (!string.IsNullOrWhiteSpace(desde) && DateTime.TryParse(desde, out var dDesde))
-                q = q.Where(f => f.Fecha >= DateTime.SpecifyKind(dDesde, DateTimeKind.Utc));
+            {
+                var desdeUtc = DateTime.SpecifyKind(dDesde.Date, DateTimeKind.Utc);
+                q = q.Where(f => f.Fecha.Date >= desdeUtc.Date);
+            }
 
             if (!string.IsNullOrWhiteSpace(hasta) && DateTime.TryParse(hasta, out var dHasta))
-                q = q.Where(f => f.Fecha <= DateTime.SpecifyKind(dHasta, DateTimeKind.Utc));
+            {
+                var hastaUtc = DateTime.SpecifyKind(dHasta.Date, DateTimeKind.Utc);
+                q = q.Where(f => f.Fecha.Date <= hastaUtc.Date);
+            }
 
             var lista = await q
                 .OrderByDescending(f => f.Fecha)
@@ -99,18 +106,53 @@ namespace ControlFichajesAPI.Controladores
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Fichaje dto)
         {
+            // DEBUG: Claims del token
+            Console.WriteLine("===== CLAIMS DEL TOKEN =====");
+            foreach (var claim in User.Claims)
+                Console.WriteLine($"{claim.Type}: {claim.Value}");
+            Console.WriteLine("============================");
+
             var (idUsuario, rol) = GetAuthInfo(User);
 
-            if (rol != "admin")
+            Console.WriteLine($"[DEBUG] idUsuario del token: {idUsuario}, rol: {rol}");
+            Console.WriteLine($"[DEBUG] dto.IdUsuario recibido: {dto.IdUsuario}");
+
+            // Asignación robusta de IdUsuario
+            if (rol == "admin")
+            {
+                if (dto.IdUsuario <= 0)
+                {
+                    if (idUsuario == null)
+                        return BadRequest(new { message = "IdUsuario es obligatorio para admin" });
+                    dto.IdUsuario = idUsuario.Value;
+                }
+            }
+            else
             {
                 if (idUsuario == null) return Forbid();
-                dto.IdUsuario = idUsuario.Value; // fuerza dueño
+                dto.IdUsuario = idUsuario.Value;
             }
 
-            dto.Fecha = DateTime.SpecifyKind(dto.Fecha, DateTimeKind.Utc);
+            Console.WriteLine($"[DEBUG] dto.IdUsuario FINAL antes de guardar: {dto.IdUsuario}");
+
+            // ✅ Defaults coherentes - CON UTC porque tu columna es 'timestamp with time zone'
+            dto.Fecha = dto.Fecha == default
+                ? DateTime.SpecifyKind(DateTime.Now.Date, DateTimeKind.Utc)
+                : DateTime.SpecifyKind(dto.Fecha.Date, DateTimeKind.Utc);
+
+            if (dto.Hora_Entrada == null || dto.Hora_Entrada == TimeSpan.Zero)
+                dto.Hora_Entrada = DateTime.Now.TimeOfDay;
+
+            dto.Tiempo_Pausa ??= 0;
+
+            // LOG: conexión efectiva y proveedor (para confirmar BD y schema)
+            Console.WriteLine($"[DEBUG] Connection: {_ctx.Database.GetDbConnection().ConnectionString}");
+            Console.WriteLine($"[DEBUG] Provider:   {_ctx.Database.ProviderName}");
+            Console.WriteLine($"[DEBUG] Justo antes de Save: IdUsuario={dto.IdUsuario}, Fecha={dto.Fecha:yyyy-MM-dd}, HE={dto.Hora_Entrada}, HS={dto.Hora_Salida}, TP={dto.Tiempo_Pausa}");
 
             _ctx.Fichajes.Add(dto);
             await _ctx.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetById), new { id = dto.Id_Fichaje }, dto);
         }
 
@@ -128,15 +170,15 @@ namespace ControlFichajesAPI.Controladores
             if (rol != "admin" && db.IdUsuario != idUsuario)
                 return Forbid();
 
-            db.Fecha = DateTime.SpecifyKind(input.Fecha, DateTimeKind.Utc);
+            // ✅ Con SpecifyKind porque tu columna es 'timestamp with time zone'
+            db.Fecha = DateTime.SpecifyKind(input.Fecha.Date, DateTimeKind.Utc);
             db.Hora_Entrada = input.Hora_Entrada;
             db.Hora_Salida = input.Hora_Salida;
             db.Tiempo_Pausa = input.Tiempo_Pausa;
-            db.Tipo_Jornada = input.Tipo_Jornada;
 
             if (rol == "admin")
                 db.IdUsuario = input.IdUsuario;
-
+            
             await _ctx.SaveChangesAsync();
             return Ok(db);
         }
@@ -160,11 +202,15 @@ namespace ControlFichajesAPI.Controladores
 
         private (int? idUsuario, string rol) GetAuthInfo(ClaimsPrincipal user)
         {
-            var sub = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var sub = user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                      ?? user.FindFirstValue(ClaimTypes.NameIdentifier)
+                      ?? user.FindFirstValue("userId")
+                      ?? user.FindFirstValue("id");
+
             int? id = int.TryParse(sub, out var parsed) ? parsed : null;
             var rol = (user.FindFirstValue(ClaimTypes.Role) ?? "empleado").ToLowerInvariant();
+
             return (id, rol);
         }
-        
     }
 }
