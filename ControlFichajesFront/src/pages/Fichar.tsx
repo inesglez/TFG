@@ -1,49 +1,126 @@
-import { useState } from "react";
-import { ficharEntrada, ficharSalida } from "../api/fichajes";
-import { Paper, Typography, Button, Stack, Alert, Box } from "@mui/material";
+import { useState, useEffect } from 'react';
+import { Button, Box, Typography, Alert } from '@mui/material';
+import { ficharEntrada, ficharSalida, iniciarPausa, finalizarPausa } from '../api/fichajes';
 
 export default function Fichar() {
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const idUsuario = Number(localStorage.getItem("idUsuario") ?? 0);
+  const [enPausa, setEnPausa] = useState(false);
+  const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error', texto: string } | null>(null);
+  const [tiempoPausa, setTiempoPausa] = useState(0);
+  
+  // Obtener idUsuario del token (ajusta según tu implementación)
+  const idUsuario = 6; // 🔥 Cambia esto por el ID real del usuario logueado
 
-  async function handleEntrada() {
-    setLoading(true); setMsg(null); setError(null);
-    try { await ficharEntrada(idUsuario); setMsg("Entrada registrada"); }
-    catch (e: any) { setError(e?.response?.data?.detail ?? "Error"); }
-    finally { setLoading(false); }
-  }
-  async function handleSalida() {
-    setLoading(true); setMsg(null); setError(null);
-    try { await ficharSalida(idUsuario); setMsg("Salida registrada"); }
-    catch (e: any) { setError(e?.response?.data?.detail ?? "Error"); }
-    finally { setLoading(false); }
-  }
+  useEffect(() => {
+    // Verificar si hay una pausa activa al cargar
+    const pausaActiva = localStorage.getItem('pausa_inicio');
+    setEnPausa(!!pausaActiva);
+    
+    // Si hay pausa activa, actualizar el contador cada segundo
+    if (pausaActiva) {
+      const interval = setInterval(() => {
+        const inicio = new Date(pausaActiva);
+        const ahora = new Date();
+        const minutos = Math.floor((ahora.getTime() - inicio.getTime()) / 60000);
+        setTiempoPausa(minutos);
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [enPausa]);
 
-  const APPBAR_HEIGHT = 64;
+  const handleEntrada = async () => {
+    try {
+      await ficharEntrada(idUsuario);
+      setMensaje({ tipo: 'success', texto: '✅ Entrada registrada correctamente' });
+    } catch (error: any) {
+      setMensaje({ tipo: 'error', texto: `❌ ${error.message || 'Error al fichar entrada'}` });
+    }
+  };
+
+  const handleSalida = async () => {
+    try {
+      // Si hay pausa activa, avisar
+      if (enPausa) {
+        setMensaje({ tipo: 'error', texto: '⚠️ Debes reanudar la pausa antes de fichar salida' });
+        return;
+      }
+      
+      await ficharSalida(idUsuario);
+      setMensaje({ tipo: 'success', texto: '✅ Salida registrada correctamente' });
+    } catch (error: any) {
+      setMensaje({ tipo: 'error', texto: `❌ ${error.message || 'Error al fichar salida'}` });
+    }
+  };
+
+  const handlePausa = async () => {
+    try {
+      if (enPausa) {
+        await finalizarPausa(idUsuario);
+        setEnPausa(false);
+        setTiempoPausa(0);
+        setMensaje({ tipo: 'success', texto: '✅ Pausa finalizada' });
+      } else {
+        await iniciarPausa(idUsuario);
+        setEnPausa(true);
+        setMensaje({ tipo: 'success', texto: '⏸️ Pausa iniciada' });
+      }
+    } catch (error: any) {
+      setMensaje({ tipo: 'error', texto: `❌ ${error.message || 'Error con la pausa'}` });
+    }
+  };
 
   return (
-    <Box
-      sx={{
-        minHeight: `calc(100dvh - ${APPBAR_HEIGHT}px)`,
-        width: "100%",
-        display: "grid",
-        placeItems: "center",
-        px: { xs: 2, sm: 3, md: 4 },
-        bgcolor: "background.default",
-      }}
-    >
-      <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, width: "100%", maxWidth: 520 }}>
-        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Fichar</Typography>
-        <Typography sx={{ mb: 2 }} color="text.secondary">Usuario: {idUsuario || "no logueado"}</Typography>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          <Button variant="contained" onClick={handleEntrada} disabled={!idUsuario || loading}>Fichar Entrada</Button>
-          <Button variant="outlined" onClick={handleSalida} disabled={!idUsuario || loading}>Fichar Salida</Button>
-        </Stack>
-        {msg && <Alert sx={{ mt: 2 }} severity="success">{msg}</Alert>}
-        {error && <Alert sx={{ mt: 2 }} severity="error">{error}</Alert>}
-      </Paper>
+    <Box sx={{ p: 3, maxWidth: 500, mx: 'auto' }}>
+      <Typography variant="h4" sx={{ mb: 3 }}>
+        Control de Fichajes
+      </Typography>
+      
+      {mensaje && (
+        <Alert 
+          severity={mensaje.tipo} 
+          sx={{ mb: 2 }}
+          onClose={() => setMensaje(null)}
+        >
+          {mensaje.texto}
+        </Alert>
+      )}
+      
+      {enPausa && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          ⏸️ Pausa activa: {tiempoPausa} minuto{tiempoPausa !== 1 ? 's' : ''}
+        </Alert>
+      )}
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Button 
+          variant="contained" 
+          color="success" 
+          size="large"
+          onClick={handleEntrada}
+          disabled={enPausa}
+        >
+          🟢 Fichar Entrada
+        </Button>
+        
+        <Button 
+          variant="contained" 
+          color={enPausa ? "warning" : "info"}
+          size="large"
+          onClick={handlePausa}
+        >
+          {enPausa ? '▶️ Reanudar' : '⏸️ Pausar'}
+        </Button>
+        
+        <Button 
+          variant="contained" 
+          color="error" 
+          size="large"
+          onClick={handleSalida}
+          disabled={enPausa}
+        >
+          🔴 Fichar Salida
+        </Button>
+      </Box>
     </Box>
   );
 }

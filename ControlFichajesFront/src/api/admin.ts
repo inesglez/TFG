@@ -33,13 +33,11 @@ export type IncidenciaAdmin = {
 
 // ---------- FICHAJES ----------
 export async function getFichajesHoy(): Promise<FichajeAdmin[]> {
-  // Backend sugerido: GET /api/admin/fichajes/hoy
   const { data } = await http.get<FichajeAdmin[]>("/admin/fichajes/hoy");
   return data;
 }
 
 export async function getFichajesRango(desdeISO: string, hastaISO: string): Promise<FichajeAdmin[]> {
-  // Backend sugerido: GET /api/admin/fichajes?desde=YYYY-MM-DD&hasta=YYYY-MM-DD
   const { data } = await http.get<FichajeAdmin[]>("/admin/fichajes", {
     params: { desde: desdeISO, hasta: hastaISO },
   });
@@ -50,7 +48,6 @@ export async function getFichajesRango(desdeISO: string, hastaISO: string): Prom
 export async function getIncidenciasAdmin(
   estado?: "pendiente" | "resuelta" | "en_proceso"
 ): Promise<IncidenciaAdmin[]> {
-  // Backend sugerido: GET /api/admin/incidencias?estado=pendiente
   const { data } = await http.get<IncidenciaAdmin[]>("/admin/incidencias", {
     params: estado ? { estado } : undefined,
   });
@@ -61,34 +58,73 @@ export async function updateEstadoIncidencia(
   id: number,
   estado: "pendiente" | "resuelta" | "en_proceso"
 ): Promise<void> {
-  // Backend sugerido: PATCH /api/admin/incidencias/{id}/estado
-  await http.patch(`/api/admin/incidencias/${id}/estado`, { estado });
+  await http.patch(`/admin/incidencias/${id}/estado`, { estado });
 }
 
 // ---------- USUARIOS ----------
 export async function getUsuarios(): Promise<UsuarioLite[]> {
-  // Backend sugerido: GET /api/admin/usuarios
   const { data } = await http.get<UsuarioLite[]>("/admin/usuarios");
   return data;
 }
 
+// Crear usuario con rol seleccionado
 export async function createUsuario(payload: {
   usuario: string;
   correo?: string;
   password: string;
   rol: "admin" | "empleado";
+  nombre?: string;
+  apellido?: string;
+  activo?: boolean;
 }): Promise<UsuarioLite> {
-  // Backend sugerido: POST /api/admin/usuarios
-  const { data } = await http.post<UsuarioLite>("/admin/usuarios", payload);
+  // Si tu backend espera PascalCase (CreateUsuarioDto):
+  const body = {
+    Usuario: payload.usuario,
+    Correo: payload.correo,
+    Password: payload.password,
+    Rol: payload.rol,
+    Nombre: payload.nombre,
+    Apellido: payload.apellido,
+    Activo: payload.activo,
+  };
+  const { data } = await http.post<UsuarioLite>("/admin/usuarios", body);
   return data;
 }
 
-export async function setUsuarioActivo(idUsuario: number, activo: boolean): Promise<void> {
-  // Backend sugerido: PATCH /api/admin/usuarios/{id}/activo
-  await http.patch(`/api/admin/usuarios/${idUsuario}/activo`, { activo });
+// Editar usuario (correo, rol, estado, contraseña opcional, nombre/apellido opcionales)
+export async function updateUsuario(
+  idUsuario: number,
+  data: {
+    nombre?: string;
+    apellido?: string;
+    correo?: string;
+    rol?: "admin" | "empleado";
+    activo?: boolean;
+    password?: string;
+  }
+): Promise<void> {
+  const body = {
+    Nombre: data.nombre,
+    Apellido: data.apellido,
+    Correo: data.correo,
+    Rol: data.rol,
+    Activo: data.activo,
+    Password: data.password,
+  };
+  await http.put(`/admin/usuarios/${idUsuario}`, body);
 }
 
+// Activar/desactivar
+export async function setUsuarioActivo(idUsuario: number, activo: boolean): Promise<void> {
+  await http.patch(`/admin/usuarios/${idUsuario}/activo`, { Activo: activo });
+}
+
+// Cambiar rol rápido
 export async function setUsuarioRol(idUsuario: number, rol: "admin" | "empleado"): Promise<void> {
-  // Backend sugerido: PATCH /api/admin/usuarios/{id}/rol
-  await http.patch(`/api/admin/usuarios/${idUsuario}/rol`, { rol });
+  await http.patch(`/admin/usuarios/${idUsuario}/rol`, { Rol: rol });
+}
+
+// Eliminar usuario
+export async function deleteUsuario(idUsuario: number): Promise<void> {
+  await http.delete(`/admin/usuarios/${idUsuario}`);
 }
