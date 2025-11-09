@@ -60,12 +60,41 @@ namespace ControlFichajesAPI.Data
                 entity.ToTable("Incidencias");
                 entity.HasKey(e => e.Id_Incidencia);
 
-                entity.Property(e => e.Id_Incidencia).HasColumnName("Id_Incidencia");
-                entity.Property(e => e.IdUsuario).HasColumnName("Id_Usuario");
-                entity.Property(e => e.Fecha).HasColumnName("Fecha");
-                entity.Property(e => e.Tipo).HasColumnName("Tipo");
-                entity.Property(e => e.Descripcion).HasColumnName("Descripcion");
-                entity.Property(e => e.Estado).HasColumnName("Estado");
+                entity.Property(e => e.Id_Incidencia)
+                    .HasColumnName("Id_Incidencia")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.IdUsuario)
+                    .HasColumnName("IdUsuario")
+                    .IsRequired();
+
+                entity.Property(e => e.Fecha)
+                    .HasColumnName("Fecha")
+                    .IsRequired();
+
+                entity.Property(e => e.Tipo)
+                    .HasColumnName("Tipo")
+                    .HasDefaultValue("Incidencia");
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("Descripcion")
+                    .IsRequired();
+
+                entity.Property(e => e.Estado)
+                    .HasColumnName("Estado")
+                    .HasDefaultValue("Pendiente");
+
+                entity.Property(e => e.RespuestaAdmin)
+                    .HasColumnName("RespuestaAdmin");
+
+                entity.Property(e => e.FechaRespuesta)
+                    .HasColumnName("FechaRespuesta");
+
+                entity.Property(e => e.FechaInicio)
+                    .HasColumnName("FechaInicio");
+
+                entity.Property(e => e.FechaFin)
+                    .HasColumnName("FechaFin");
             });
         }
     }
