@@ -12,15 +12,56 @@ namespace ControlFichajesAPI.Controladores
         private readonly AppDbContext _ctx;
         public AdminUsuariosController(AppDbContext ctx) => _ctx = ctx;
 
-        // GET /api/admin/usuarios
+        // GET /api/admin/usuarios?buscar=juan&rol=admin&ordenar=nombre&activo=true
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] string? buscar = null,
+            [FromQuery] string? rol = null,
+            [FromQuery] string? ordenar = "nombre",
+            [FromQuery] bool? activo = null
+        )
         {
-            var usuarios = await _ctx.Usuarios
+            var query = _ctx.Usuarios.AsQueryable();
+
+            // Filtro por búsqueda (nombre, apellido o correo)
+            if (!string.IsNullOrWhiteSpace(buscar))
+            {
+                var b = buscar.ToLower();
+                query = query.Where(u => 
+                    u.Nombre.ToLower().Contains(b) ||
+                    u.Apellido.ToLower().Contains(b) ||
+                    u.Correo.ToLower().Contains(b)
+                );
+            }
+
+            // Filtro por rol
+            if (!string.IsNullOrWhiteSpace(rol))
+            {
+                var rolLower = rol.ToLower();
+                query = query.Where(u => u.Rol.ToLower() == rolLower);
+            }
+
+            // Filtro por estado activo/inactivo
+            if (activo.HasValue)
+            {
+                var estado = activo.Value ? "Activo" : "Inactivo";
+                query = query.Where(u => u.Estado == estado);
+            }
+
+            // Ordenamiento
+            query = ordenar?.ToLower() switch
+            {
+                "apellido" => query.OrderBy(u => u.Apellido).ThenBy(u => u.Nombre),
+                "correo" => query.OrderBy(u => u.Correo),
+                "rol" => query.OrderBy(u => u.Rol).ThenBy(u => u.Nombre),
+                _ => query.OrderBy(u => u.Nombre).ThenBy(u => u.Apellido) // por defecto: nombre
+            };
+
+            var usuarios = await query
                 .Select(u => new
                 {
                     idUsuario = u.Id_Usuario,
-                    usuario = u.Correo,  // usamos correo como identificador visible
+                    usuario = u.Correo,
                     nombre = u.Nombre,
                     apellido = u.Apellido,
                     correo = u.Correo,
@@ -132,7 +173,7 @@ namespace ControlFichajesAPI.Controladores
 
         public class CreateUsuarioDto
         {
-            public string? Usuario { get; set; } // ignorado de momento
+            public string? Usuario { get; set; }
             public string? Nombre { get; set; }
             public string? Apellido { get; set; }
             public string? Correo { get; set; }
@@ -146,9 +187,9 @@ namespace ControlFichajesAPI.Controladores
             public string? Nombre { get; set; }
             public string? Apellido { get; set; }
             public string? Correo { get; set; }
-            public string? Rol { get; set; } // "admin" | "empleado"
+            public string? Rol { get; set; }
             public bool? Activo { get; set; }
-            public string? Password { get; set; } // opcional
+            public string? Password { get; set; }
         }
 
         public class ActivoDto

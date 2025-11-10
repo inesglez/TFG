@@ -11,6 +11,7 @@ namespace ControlFichajesAPI.Dtos
         public int IdUsuario { get; set; }
         public string Nombre { get; set; } = "";
         public string Rol { get; set; } = "empleado";
+        public string Email { get; set; } = string.Empty;
         public string Token { get; set; } = "";
     }
 }

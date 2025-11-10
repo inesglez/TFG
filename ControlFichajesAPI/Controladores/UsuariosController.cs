@@ -24,44 +24,44 @@ namespace ControlFichajesAPI.Controladores
             _config = config;
         }
 
-        // POST: api/usuarios/login
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
-        {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Usuario) || string.IsNullOrWhiteSpace(dto.Password))
-                return BadRequest("Usuario y password son requeridos");
+      // POST: api/usuarios/login
+[HttpPost("login")]
+public async Task<IActionResult> Login([FromBody] LoginDto dto)
+{
+    if (dto == null || string.IsNullOrWhiteSpace(dto.Usuario) || string.IsNullOrWhiteSpace(dto.Password))
+        return BadRequest("Usuario y password son requeridos");
 
-            var input = dto.Usuario.Trim();
+    var input = dto.Usuario.Trim();
 
-            var user = await _ctx.Usuarios
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u =>
-                    EF.Functions.ILike((u.Nombre ?? ""), input) ||
-                    EF.Functions.ILike((u.Correo ?? ""), input)
-                );
+    var user = await _ctx.Usuarios
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u =>
+            EF.Functions.ILike((u.Nombre ?? ""), input) ||
+            EF.Functions.ILike((u.Correo ?? ""), input)
+        );
 
-            if (user == null)
-                return Unauthorized("Usuario no encontrado");
+    if (user == null)
+        return Unauthorized("Usuario no encontrado");
 
-            if (!string.Equals(user.Estado?.Trim(), "activo", StringComparison.OrdinalIgnoreCase))
-                return Unauthorized("Usuario inactivo");
+    if (!string.Equals(user.Estado?.Trim(), "activo", StringComparison.OrdinalIgnoreCase))
+        return Unauthorized("Usuario inactivo");
 
-            if (!string.Equals(user.Contraseña, dto.Password))
-                return Unauthorized("Contraseña incorrecta");
+    if (!string.Equals(user.Contraseña, dto.Password))
+        return Unauthorized("Contraseña incorrecta");
 
-            var token = GenerateJwtToken(user);
+    var token = GenerateJwtToken(user);
 
-            var resp = new LoginResponseDto
-            {
-                IdUsuario = user.Id_Usuario,
-                Nombre = user.Nombre,
-                Rol = user.Rol,
-                Token = token
-            };
+    var resp = new LoginResponseDto
+    {
+        IdUsuario = user.Id_Usuario,
+        Nombre = user.Nombre,
+        Rol = user.Rol,
+        Email = user.Correo, // ✅ AGREGAR ESTA LÍNEA
+        Token = token
+    };
 
-            return Ok(resp);
-        }
-
+    return Ok(resp);
+}
         // GET: api/usuarios/me (usuario autenticado)
         [Authorize]
         [HttpGet("me")]
