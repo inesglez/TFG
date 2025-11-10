@@ -21,51 +21,67 @@ function CardAction({
 }) {
   return (
     <Paper
-      elevation={6}
-      sx={(theme) => ({
+      elevation={4}
+      sx={{
         p: 3,
         borderRadius: 3,
         height: "100%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        background:
-          theme.palette.mode === "light"
-            ? "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%)"
-            : "linear-gradient(180deg, rgba(17,24,39,1) 0%, rgba(31,41,55,1) 100%)",
-        border: `1px solid ${theme.palette.divider}`,
-      })}
+        bgcolor: "#fff",
+        border: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+        },
+      }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 3 }}>
         <Box
           sx={(theme) => ({
-            width: 48,
-            height: 48,
+            width: 56,
+            height: 56,
             borderRadius: 2,
             display: "grid",
             placeItems: "center",
             bgcolor: theme.palette[color].main,
             color: theme.palette.getContrastText(theme.palette[color].main),
-            boxShadow: 1,
+            boxShadow: `0 4px 12px ${theme.palette[color].main}40`,
             flex: "0 0 auto",
           })}
         >
           {icon}
         </Box>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.3, mb: 0.5 }}>
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
               {subtitle}
             </Typography>
           )}
         </Box>
       </Box>
 
-      <Box sx={{ pt: 2, display: "flex", justifyContent: "flex-end" }}>
-        <Button variant="contained" color={color} onClick={onClick}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          variant="contained"
+          color={color}
+          onClick={onClick}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            px: 3,
+            boxShadow: "none",
+            "&:hover": {
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            },
+          }}
+        >
           Abrir
         </Button>
       </Box>
@@ -77,87 +93,77 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
-        Panel de administración
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 2 }}>
-        Gestiona usuarios, incidencias y revisa los fichajes de hoy.
-      </Typography>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        bgcolor: "background.default",
+        py: 4,
+        px: { xs: 2, sm: 3, md: 6 },
+      }}
+    >
+      <Box sx={{ width: "100%", maxWidth: 1400 }}>
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              mb: 0.5,
+            }}
+          >
+            Panel de administración
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Gestiona usuarios, incidencias y revisa los fichajes de hoy.
+          </Typography>
+        </Box>
 
-      {/* Layout responsive con CSS Grid nativo */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(12, 1fr)",
-          gap: 2,
-          // Breakpoints responsivos
-          "@media (max-width: 599.95px)": {
-            gridTemplateColumns: "repeat(4, 1fr)",
-          },
-          "@media (min-width: 600px) and (max-width: 899.95px)": {
-            gridTemplateColumns: "repeat(8, 1fr)",
-          },
-          "@media (min-width: 900px)": {
-            gridTemplateColumns: "repeat(12, 1fr)",
-          },
-        }}
-      >
-        {/* Item 1 */}
+        {/* Grid de cards */}
         <Box
           sx={{
-            gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" },
+            display: "grid",
+            gap: 3,
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(4, 1fr)",
+            },
           }}
         >
           <CardAction
             title="Crear usuario"
             subtitle="Dar de alta un nuevo empleado o admin"
-            icon={<PersonAddAlt1Icon />}
+            icon={<PersonAddAlt1Icon sx={{ fontSize: 28 }} />}
             color="success"
-            onClick={() => navigate("/admin/usuarios?crear=1")}
+            onClick={() => navigate("/admin/crear-usuario")}
           />
-        </Box>
 
-        {/* Item 2 */}
-        <Box
-          sx={{
-            gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" },
-          }}
-        >
           <CardAction
             title="Usuarios"
             subtitle="Listado, activar/inactivar, cambio de rol"
-            icon={<GroupOutlinedIcon />}
+            icon={<GroupOutlinedIcon sx={{ fontSize: 28 }} />}
             color="primary"
             onClick={() => navigate("/admin/usuarios")}
           />
-        </Box>
 
-        {/* Item 3 */}
-        <Box
-          sx={{
-            gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" },
-          }}
-        >
           <CardAction
             title="Incidencias"
             subtitle="Pendientes, en proceso, resueltas"
-            icon={<AssignmentLateOutlinedIcon />}
+            icon={<AssignmentLateOutlinedIcon sx={{ fontSize: 28 }} />}
             color="warning"
             onClick={() => navigate("/admin/incidencias")}
           />
-        </Box>
 
-        {/* Item 4 - 🔥 CORREGIDO */}
-        <Box
-          sx={{
-            gridColumn: { xs: "span 4", sm: "span 4", md: "span 3" },
-          }}
-        >
           <CardAction
             title="Fichajes de hoy"
             subtitle="Entradas/Salidas y tiempos"
-            icon={<AccessTimeOutlinedIcon />}
+            icon={<AccessTimeOutlinedIcon sx={{ fontSize: 28 }} />}
             color="info"
             onClick={() => navigate("/admin/fichajes-hoy")}
           />

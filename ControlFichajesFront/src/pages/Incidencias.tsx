@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { crearIncidencia, getTodasIncidencias } from "../api/incidencias";
 import {
-  Typography, Stack, TextField, Button, List, ListItem,
-  ListItemText, Chip, Box, ToggleButtonGroup, ToggleButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel, Card, Alert
+  Typography, Stack, TextField, Button, List,
+  Chip, Box, ToggleButtonGroup, ToggleButton,
+  Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel, Card, Alert, Paper, Divider
 } from "@mui/material";
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import EventIcon from '@mui/icons-material/Event';
@@ -114,146 +114,225 @@ export default function Incidencias() {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
-        Incidencias y Solicitudes
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Reporta problemas o solicita días libres
-      </Typography>
-
-      {/* Selector de tipo de reporte */}
-      {rol !== "admin" && (
-        <Card sx={{ p: 3, mb: 3 }}>
-          <ToggleButtonGroup
-            value={tipoReporte}
-            exclusive
-            onChange={(_, val) => val && setTipoReporte(val)}
-            fullWidth
-            sx={{ mb: 3 }}
-          >
-            <ToggleButton value="incidencia" sx={{ py: 2 }}>
-              <AssignmentLateIcon sx={{ mr: 1 }} />
-              Reportar Incidencia
-            </ToggleButton>
-            <ToggleButton value="solicitud" sx={{ py: 2 }}>
-              <EventIcon sx={{ mr: 1 }} />
-              Solicitar Días
-            </ToggleButton>
-          </ToggleButtonGroup>
-
-          {tipoReporte === "incidencia" && (
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-              <TextField
-                label="Describe la incidencia"
-                value={comentario}
-                onChange={e => setComentario(e.target.value)}
-                fullWidth
-                multiline
-                rows={3}
-                placeholder="Ej: Error al fichar salida, problema con el sistema..."
-              />
-              <Button
-                variant="contained"
-                onClick={crearIncidenciaNormal}
-                disabled={!idUsuario || !comentario.trim()}
-                sx={{ minWidth: { xs: "100%", md: 150 } }}
-              >
-                Reportar
-              </Button>
-            </Stack>
-          )}
-
-          {tipoReporte === "solicitud" && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setDialogOpen(true)}
-              fullWidth
-              size="large"
-              startIcon={<EventIcon />}
-              sx={{ py: 2 }}
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        bgcolor: "background.default",
+        py: 4,
+        px: { xs: 2, sm: 3, md: 6 },
+      }}
+    >
+      <Box sx={{ width: "100%", maxWidth: 1000 }}>
+        {/* Header */}
+        <Paper
+          elevation={4}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            bgcolor: "#fff",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(0,0,0,0.06)",
+            mb: 3,
+          }}
+        >
+          <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#f8fafc" }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                color: "text.primary",
+                letterSpacing: "-0.02em",
+              }}
             >
-              Solicitar Vacaciones o Días por Asuntos Propios
-            </Button>
-          )}
-        </Card>
-      )}
+              Incidencias y Solicitudes
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Reporta problemas o solicita días libres
+            </Typography>
+          </Box>
 
-      {/* Lista de incidencias */}
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
-        Mis incidencias y solicitudes
-      </Typography>
-      
-      {incidencias.length === 0 ? (
-        <Card sx={{ p: 4, textAlign: "center" }}>
-          <Typography color="text.secondary">
-            No tienes incidencias registradas
-          </Typography>
-        </Card>
-      ) : (
-        <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {incidencias.map(inc => {
-            const estadoChip = getEstadoChip(inc.estado);
-            const tipoChip = getTipoChip(inc.tipo);
-            
-            return (
-              <Card key={inc.id_Incidencia} sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2, flexWrap: "wrap" }}>
-                  <Chip label={`#${inc.id_Incidencia}`} size="small" color="primary" />
-                  <Chip label={tipoChip.label} size="small" color={tipoChip.color} />
-                  <Chip 
-                    icon={estadoChip.icon} 
-                    label={estadoChip.label} 
-                    size="small" 
-                    color={estadoChip.color} 
+          <Divider />
+
+          {/* Selector de tipo de reporte */}
+          {rol !== "admin" && (
+            <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+              <ToggleButtonGroup
+                value={tipoReporte}
+                exclusive
+                onChange={(_, val) => val && setTipoReporte(val)}
+                fullWidth
+                sx={{ mb: 3 }}
+              >
+                <ToggleButton value="incidencia" sx={{ py: 1.5, textTransform: "none", fontWeight: 600 }}>
+                  <AssignmentLateIcon sx={{ mr: 1 }} />
+                  Reportar Incidencia
+                </ToggleButton>
+                <ToggleButton value="solicitud" sx={{ py: 1.5, textTransform: "none", fontWeight: 600 }}>
+                  <EventIcon sx={{ mr: 1 }} />
+                  Solicitar Días
+                </ToggleButton>
+              </ToggleButtonGroup>
+
+              {tipoReporte === "incidencia" && (
+                <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                  <TextField
+                    label="Describe la incidencia"
+                    value={comentario}
+                    onChange={e => setComentario(e.target.value)}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    placeholder="Ej: Error al fichar salida, problema con el sistema..."
+                    size="small"
                   />
-                  <Typography variant="caption" color="text.secondary">
-                    {new Date(inc.fecha).toLocaleString('es-ES')}
-                  </Typography>
-                </Box>
-
-                {/* Fechas de solicitud */}
-                {inc.fechaInicio && inc.fechaFin && (
-                  <Alert severity="info" sx={{ mb: 2 }}>
-                    <strong>Período solicitado:</strong> {inc.fechaInicio} al {inc.fechaFin}
-                  </Alert>
-                )}
-
-                {/* Descripción */}
-                <Typography variant="body1" sx={{ mb: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
-                  {inc.descripcion}
-                </Typography>
-
-                {/* Respuesta del admin */}
-                {inc.respuestaAdmin && (
-                  <Alert 
-                    severity={inc.estado === "Aprobada" ? "success" : inc.estado === "Rechazada" ? "error" : "info"}
-                    sx={{ mt: 2 }}
+                  <Button
+                    variant="contained"
+                    onClick={crearIncidenciaNormal}
+                    disabled={!idUsuario || !comentario.trim()}
+                    sx={{ 
+                      minWidth: { xs: "100%", md: 150 },
+                      textTransform: "none",
+                      fontWeight: 600,
+                    }}
                   >
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-                      Respuesta del administrador:
-                    </Typography>
-                    <Typography variant="body2">{inc.respuestaAdmin}</Typography>
-                    {inc.fechaRespuesta && (
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                        Respondido el {new Date(inc.fechaRespuesta).toLocaleString('es-ES')}
+                    Reportar
+                  </Button>
+                </Stack>
+              )}
+
+              {tipoReporte === "solicitud" && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setDialogOpen(true)}
+                  fullWidth
+                  size="large"
+                  startIcon={<EventIcon />}
+                  sx={{ 
+                    py: 1.5,
+                    textTransform: "none",
+                    fontWeight: 600,
+                  }}
+                >
+                  Solicitar Vacaciones o Días por Asuntos Propios
+                </Button>
+              )}
+            </Box>
+          )}
+        </Paper>
+
+        {/* Lista de incidencias */}
+        <Paper
+          elevation={4}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            bgcolor: "#fff",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(0,0,0,0.06)",
+          }}
+        >
+          <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#f8fafc" }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "text.primary",
+              }}
+            >
+              Mis incidencias y solicitudes
+            </Typography>
+          </Box>
+
+          <Divider />
+
+          <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+            {incidencias.length === 0 ? (
+              <Box sx={{ py: 6, textAlign: "center" }}>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                  No tienes incidencias registradas
+                </Typography>
+                <Typography color="text.secondary">
+                  Cuando reportes una incidencia o solicites días, aparecerán aquí
+                </Typography>
+              </Box>
+            ) : (
+              <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {incidencias.map((inc, idx) => {
+                  const estadoChip = getEstadoChip(inc.estado);
+                  const tipoChip = getTipoChip(inc.tipo);
+                  
+                  return (
+                    <Card 
+                      key={inc.id_Incidencia} 
+                      sx={{ 
+                        p: 3,
+                        bgcolor: idx % 2 === 0 ? "transparent" : "rgba(0,0,0,0.01)",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2, flexWrap: "wrap" }}>
+                        <Chip label={`#${inc.id_Incidencia}`} size="small" color="primary" />
+                        <Chip label={tipoChip.label} size="small" color={tipoChip.color} />
+                        <Chip 
+                          icon={estadoChip.icon} 
+                          label={estadoChip.label} 
+                          size="small" 
+                          color={estadoChip.color} 
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(inc.fecha).toLocaleString('es-ES')}
+                        </Typography>
+                      </Box>
+
+                      {/* Fechas de solicitud */}
+                      {inc.fechaInicio && inc.fechaFin && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                          <strong>Período solicitado:</strong> {inc.fechaInicio} al {inc.fechaFin}
+                        </Alert>
+                      )}
+
+                      {/* Descripción */}
+                      <Typography variant="body1" sx={{ mb: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
+                        {inc.descripcion}
                       </Typography>
-                    )}
-                  </Alert>
-                )}
-              </Card>
-            );
-          })}
-        </List>
-      )}
+
+                      {/* Respuesta del admin */}
+                      {inc.respuestaAdmin && (
+                        <Alert 
+                          severity={inc.estado === "Aprobada" ? "success" : inc.estado === "Rechazada" ? "error" : "info"}
+                          sx={{ mt: 2 }}
+                        >
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                            Respuesta del administrador:
+                          </Typography>
+                          <Typography variant="body2">{inc.respuestaAdmin}</Typography>
+                          {inc.fechaRespuesta && (
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+                              Respondido el {new Date(inc.fechaRespuesta).toLocaleString('es-ES')}
+                            </Typography>
+                          )}
+                        </Alert>
+                      )}
+                    </Card>
+                  );
+                })}
+              </List>
+            )}
+          </Box>
+        </Paper>
+      </Box>
 
       {/* Diálogo para solicitar días */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>Solicitar Días</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small">
               <InputLabel>Tipo de solicitud</InputLabel>
               <Select
                 value={tipoSolicitud}
@@ -272,6 +351,7 @@ export default function Incidencias() {
               onChange={(e) => setFechaInicio(e.target.value)}
               InputLabelProps={{ shrink: true }}
               fullWidth
+              size="small"
             />
 
             <TextField
@@ -281,6 +361,7 @@ export default function Incidencias() {
               onChange={(e) => setFechaFin(e.target.value)}
               InputLabelProps={{ shrink: true }}
               fullWidth
+              size="small"
             />
 
             <TextField
@@ -291,6 +372,7 @@ export default function Incidencias() {
               rows={3}
               fullWidth
               placeholder="Describe brevemente el motivo de tu solicitud..."
+              size="small"
             />
 
             {fechaInicio && fechaFin && (
@@ -302,12 +384,13 @@ export default function Incidencias() {
             )}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
           <Button
             variant="contained"
             onClick={crearSolicitudDias}
             disabled={!fechaInicio || !fechaFin}
+            sx={{ textTransform: "none", fontWeight: 600 }}
           >
             Enviar Solicitud
           </Button>

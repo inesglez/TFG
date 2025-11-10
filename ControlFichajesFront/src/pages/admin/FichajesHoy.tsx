@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-  Box, Paper, Typography, Table, TableContainer,
+  Box, Paper, Typography, Table,
   TableHead, TableRow, TableCell, TableBody,
-  Chip, CircularProgress, Alert
+  Chip, CircularProgress, Alert, Divider
 } from '@mui/material';
 import { getHistorial } from '../../api/fichajes';
 
@@ -63,18 +63,15 @@ export default function FichajesHoy() {
   const calcularHorasTrabajadas = (entrada: string | null, salida: string | null, pausa: number) => {
     console.log('🔢 Calculando:', { entrada, salida, pausa });
     
-    // 🔥 VALIDACIÓN ESTRICTA
     if (!entrada || !salida || entrada === 'null' || salida === 'null') {
       console.log('⚠️ Falta entrada o salida');
       return '-';
     }
     
     try {
-      // Extraer solo HH:mm (ignorar segundos si vienen)
       const entradaLimpia = entrada.substring(0, 5);
       const salidaLimpia = salida.substring(0, 5);
       
-      // 🔥 VALIDACIÓN ADICIONAL
       if (!entradaLimpia.includes(':') || !salidaLimpia.includes(':')) {
         console.log('⚠️ Formato inválido');
         return '-';
@@ -116,71 +113,137 @@ export default function FichajesHoy() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "calc(100vh - 64px)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "background.default",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
-        Fichajes de hoy
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        {new Date().toLocaleDateString('es-ES', {
-          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        })}
-      </Typography>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        bgcolor: "background.default",
+        py: 4,
+        px: { xs: 2, sm: 3, md: 6 },
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          width: "100%",
+          maxWidth: 1400,
+          borderRadius: 3,
+          overflow: "hidden",
+          bgcolor: "#fff",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          border: "1px solid rgba(0,0,0,0.06)",
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#f8fafc" }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Fichajes de hoy
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {new Date().toLocaleDateString('es-ES', {
+              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            })}
+          </Typography>
+        </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-      )}
+        <Divider />
 
-      {fichajes.length === 0 ? (
-        <Alert severity="info">No hay fichajes registrados para hoy.</Alert>
-      ) : (
-        <TableContainer component={Paper} elevation={3}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: 'primary.main' }}>
-                <TableCell sx={{ color: 'white', fontWeight: 700 }}>ID Usuario</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700 }}>Entrada</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700 }}>Salida</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700 }}>Pausa (min)</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700 }}>Horas trabajadas</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700 }}>Estado</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {fichajes.map((f) => (
-                <TableRow key={f.id_Fichaje} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
-                  <TableCell>
-                    <Chip label={`Usuario ${f.idUsuario}`} color="primary" variant="outlined" size="small" />
-                  </TableCell>
-                  <TableCell>
-                    {f.hora_Entrada ? <b>{f.hora_Entrada}</b> : '-'}
-                  </TableCell>
-                  <TableCell>
-                    {f.hora_Salida
-                      ? <b>{f.hora_Salida}</b>
-                      : <Chip size="small" label="En curso" color="warning" />}
-                  </TableCell>
-                  <TableCell>{f.tiempo_Pausa || 0} min</TableCell>
-                  <TableCell sx={{ color: 'success.main', fontWeight: 600 }}>
-                    {calcularHorasTrabajadas(f.hora_Entrada, f.hora_Salida, f.tiempo_Pausa)}
-                  </TableCell>
-                  <TableCell>
-                    {f.hora_Salida
-                      ? <Chip label="Completado" size="small" color="success" />
-                      : <Chip label="Activo" size="small" color="info" />}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+        {/* Content */}
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+          )}
+
+          {fichajes.length === 0 ? (
+            <Box sx={{ py: 8, textAlign: "center" }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                No hay fichajes registrados
+              </Typography>
+              <Typography color="text.secondary">
+                No se han registrado fichajes para hoy.
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ overflowX: "auto" }}>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>ID Usuario</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Entrada</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Salida</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Pausa (min)</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Horas trabajadas</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Estado</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {fichajes.map((f, idx) => (
+                    <TableRow
+                      key={f.id_Fichaje}
+                      sx={{
+                        "&:hover": { bgcolor: "rgba(37,99,235,0.04)" },
+                        bgcolor: idx % 2 === 0 ? "transparent" : "rgba(0,0,0,0.01)",
+                      }}
+                    >
+                      <TableCell>
+                        <Chip 
+                          label={`Usuario ${f.idUsuario}`} 
+                          color="primary" 
+                          variant="outlined" 
+                          size="small" 
+                        />
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        {f.hora_Entrada || '-'}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        {f.hora_Salida
+                          ? f.hora_Salida
+                          : <Chip size="small" label="En curso" color="warning" />}
+                      </TableCell>
+                      <TableCell>{f.tiempo_Pausa || 0} min</TableCell>
+                      <TableCell sx={{ color: 'success.main', fontWeight: 600 }}>
+                        {calcularHorasTrabajadas(f.hora_Entrada, f.hora_Salida, f.tiempo_Pausa)}
+                      </TableCell>
+                      <TableCell>
+                        {f.hora_Salida
+                          ? <Chip label="Completado" size="small" color="success" />
+                          : <Chip label="Activo" size="small" color="info" />}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
+        </Box>
+      </Paper>
     </Box>
   );
 }

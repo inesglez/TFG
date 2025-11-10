@@ -14,26 +14,18 @@ type Fichaje = {
   hora_Entrada?: string;
   hora_Salida?: string;
   tiempo_Pausa: number;
-  tipo_Jornada: string;
 };
 
 function fmtDate(d: string) {
   const date = new Date(d);
   return date.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
 }
+
 function fmtTime(t?: string) {
   if (!t) return "-";
   if (/^\d{2}:\d{2}/.test(t)) return t.slice(0, 5);
   const d = new Date(t);
   return isNaN(d.getTime()) ? "-" : d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-}
-function chipFor(tipo: string) {
-  const k = (tipo || "").toLowerCase();
-  if (k.includes("complet")) return { color: "primary" as const, label: "Completa" };
-  if (k.includes("parc"))    return { color: "secondary" as const, label: "Parcial" };
-  if (k.includes("remot"))   return { color: "info" as const, label: "Remoto" };
-  if (k.includes("extra"))   return { color: "warning" as const, label: "Extra" };
-  return { color: "default" as const, label: tipo || "—" };
 }
 
 export default function Dashboard() {
@@ -54,151 +46,149 @@ export default function Dashboard() {
   );
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        bgcolor: "background.default",
+        py: 4,
+        px: { xs: 2, sm: 3, md: 6 },
+      }}
+    >
       <Paper
-        elevation={8}
+        elevation={4}
         sx={{
           width: "100%",
-          // sin maxWidth fijo; si quieres limitar en %:
-          // maxWidth: "90%",
-          mx: "auto",
-          p: { xs: "3%", sm: "2.5%", md: "2%" },   // padding en %
-          borderRadius: "2%",                      // radio en %
-          boxSizing: "border-box",
+          maxWidth: 1200,
+          borderRadius: 3,
+          overflow: "hidden",
+          bgcolor: "#fff",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          border: "1px solid rgba(0,0,0,0.06)",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
-            gap: "1.5%",                            // separación en %
-            mb: "2%",                               // margen inferior en %
-          }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              Historial de fichajes
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Registros recientes del usuario #{idUsuario || "—"}
-            </Typography>
-          </Box>
+        {/* Header */}
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#f8fafc" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "center" },
+              gap: 2,
+            }}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  color: "text.primary",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Historial de fichajes
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Registros recientes del usuario #{idUsuario || "—"}
+              </Typography>
+            </Box>
 
-          <Box sx={{ display: "flex", gap: "1%", mt: { xs: "1%", sm: "0%" } }}>
-            <Chip label={`${items.length} registros`} size="small" color="primary" variant="outlined" />
-            <Chip label={`${totalPausa} min pausa`} size="small" color="secondary" variant="outlined" />
+            <Box sx={{ display: "flex", gap: 1, mt: { xs: 1, sm: 0 } }}>
+              <Chip label={`${items.length} registros`} size="small" color="primary" variant="outlined" />
+              <Chip label={`${totalPausa} min pausa`} size="small" color="secondary" variant="outlined" />
+            </Box>
           </Box>
         </Box>
 
-        {!idUsuario ? (
-          <Box sx={{ py: "6%", textAlign: "center" }}>
-            <Typography variant="h6" sx={{ mb: "1%" }}>Inicia sesión</Typography>
-            <Typography color="text.secondary">Accede para ver tu historial.</Typography>
-          </Box>
-        ) : items.length === 0 ? (
-          <Box sx={{ py: "6%", textAlign: "center" }}>
-            <Typography variant="h6" sx={{ mb: "1%" }}>No hay fichajes aún</Typography>
-            <Typography color="text.secondary">Cuando registres tu primer fichaje, aparecerá aquí.</Typography>
-          </Box>
-        ) : (
-          <>
-            {isUpSm ? (
-              <Box sx={{ overflowX: "auto" }}>
-                <Table size="small" stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 700 }}>Fecha</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Entrada</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Salida</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Pausa</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Tipo</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {items.map((f, idx) => {
-                      const info = chipFor(f.tipo_Jornada);
-                      return (
+        <Divider />
+
+        {/* Content */}
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          {!idUsuario ? (
+            <Box sx={{ py: 8, textAlign: "center" }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                Inicia sesión
+              </Typography>
+              <Typography color="text.secondary">
+                Accede para ver tu historial.
+              </Typography>
+            </Box>
+          ) : items.length === 0 ? (
+            <Box sx={{ py: 8, textAlign: "center" }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                No hay fichajes aún
+              </Typography>
+              <Typography color="text.secondary">
+                Cuando registres tu primer fichaje, aparecerá aquí.
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {isUpSm ? (
+                <Box sx={{ overflowX: "auto" }}>
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Fecha</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Entrada</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Salida</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Pausa</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {items.map((f, idx) => (
                         <TableRow
                           key={f.id_Fichaje}
                           sx={{
-                            bgcolor: idx % 2
-                              ? (theme.palette.mode === "light"
-                                  ? "rgba(15,23,42,0.02)"
-                                  : "rgba(255,255,255,0.04)")
-                              : "transparent",
+                            bgcolor: idx % 2 === 0 ? "transparent" : "rgba(0,0,0,0.01)",
                             "&:hover": {
-                              bgcolor: theme.palette.mode === "light"
-                                ? "rgba(37,99,235,0.06)"
-                                : "rgba(96,165,250,0.12)",
+                              bgcolor: "rgba(37,99,235,0.04)",
                             },
                           }}
                         >
                           <TableCell>
                             <Tooltip title={new Date(f.fecha).toLocaleString()}>
-                              <span>{fmtDate(f.fecha)}</span>
+                              <span style={{ fontWeight: 600 }}>{fmtDate(f.fecha)}</span>
                             </Tooltip>
                           </TableCell>
-                          <TableCell>{fmtTime(f.hora_Entrada)}</TableCell>
-                          <TableCell>{fmtTime(f.hora_Salida)}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{fmtTime(f.hora_Entrada)}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{fmtTime(f.hora_Salida)}</TableCell>
                           <TableCell>{f.tiempo_Pausa ?? 0} min</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={info.label}
-                              color={info.color}
-                              size="small"
-                              variant={info.color === "default" ? "outlined" : "filled"}
-                            />
-                          </TableCell>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </Box>
-            ) : (
-              <Stack divider={<Divider flexItem sx={{ opacity: 0.5 }} />} spacing={0} sx={{ gap: "1%" }}>
-                {items.map((f) => {
-                  const info = chipFor(f.tipo_Jornada);
-                  return (
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              ) : (
+                <Stack divider={<Divider flexItem sx={{ opacity: 0.5 }} />} spacing={2}>
+                  {items.map((f) => (
                     <Box
                       key={f.id_Fichaje}
                       sx={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr auto",
-                        gap: "2%",
-                        p: "2%",
-                        borderRadius: "2%",
-                        bgcolor: theme.palette.mode === "light" ? "#fff" : "rgba(255,255,255,0.04)",
-                        border: `0.1rem solid ${theme.palette.divider}`, // relativo (no px)
-                        boxSizing: "border-box",
+                        p: 2,
+                        borderRadius: 1,
+                        bgcolor: "#fff",
+                        border: "1px solid rgba(0,0,0,0.08)",
                       }}
                     >
-                      <Box>
-                        <Typography sx={{ fontWeight: 600 }}>{fmtDate(f.fecha)}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Entrada: {fmtTime(f.hora_Entrada)} • Salida: {fmtTime(f.hora_Salida)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Pausa: {f.tiempo_Pausa ?? 0} min
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: "flex", alignItems: "start" }}>
-                        <Chip
-                          label={info.label}
-                          color={info.color}
-                          size="small"
-                          variant={info.color === "default" ? "outlined" : "filled"}
-                        />
-                      </Box>
+                      <Typography sx={{ fontWeight: 600, mb: 1 }}>{fmtDate(f.fecha)}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Entrada: {fmtTime(f.hora_Entrada)} • Salida: {fmtTime(f.hora_Salida)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Pausa: {f.tiempo_Pausa ?? 0} min
+                      </Typography>
                     </Box>
-                  );
-                })}
-              </Stack>
-            )}
-          </>
-        )}
+                  ))}
+                </Stack>
+              )}
+            </>
+          )}
+        </Box>
       </Paper>
     </Box>
   );

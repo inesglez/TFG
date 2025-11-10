@@ -1,8 +1,9 @@
+// src/api/client.ts
 import axios from "axios";
 import { clearAuth, getAuth } from "../auth";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://localhost:5002/api",
   timeout: 10000,
 });
 
@@ -21,7 +22,7 @@ api.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       clearAuth();
-      window.location.href = "/login"; // opcional: redirigir al login
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
