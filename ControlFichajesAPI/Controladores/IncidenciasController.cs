@@ -124,6 +124,84 @@ namespace ControlFichajesAPI.Controladores
             return CreatedAtAction(nameof(GetById), new { id = dto.Id_Incidencia }, dto);
         }
 
+        // POST /api/incidencias/{id}/justificante
+        [HttpPost("{id:int}/justificante")]
+        [RequestSizeLimit(10 * 1024 * 1024)] // máx 10 MB
+        public async Task<IActionResult> SubirJustificante(int id, IFormFile archivo)
+        {
+            var (idUsuario, rol) = GetAuthInfo(User);
+
+            Console.WriteLine($"[DEBUG] SubirJustificante - Incidencia: {id}, Usuario: {idUsuario}, Rol: {rol}");
+
+            if (archivo == null || archivo.Length == 0)
+                return BadRequest("Archivo vacío o no proporcionado");
+
+            if (archivo.ContentType != "application/pdf")
+                return BadRequest("Solo se permiten archivos PDF");
+
+            if (archivo.Length > 10 * 1024 * 1024) // 10 MB
+                return BadRequest("El archivo no puede superar los 10 MB");
+
+            var incidencia = await _ctx.Incidencias.FindAsync(id);
+            if (incidencia == null) return NotFound("Incidencia no encontrada");
+
+            // Solo admin o dueño de la incidencia
+            if (rol != "admin" && incidencia.IdUsuario != idUsuario)
+                return Forbid();
+
+            // Carpeta donde guardas los justificantes
+            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Justificantes");
+            if (!Directory.Exists(uploadsRoot))
+                Directory.CreateDirectory(uploadsRoot);
+
+            // Nombre único para el archivo
+            var fileName = $"incidencia_{id}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
+            var filePath = Path.Combine(uploadsRoot, fileName);
+
+            // Guardar el archivo
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await archivo.CopyToAsync(stream);
+            }
+
+            Console.WriteLine($"[DEBUG] Archivo guardado: {filePath}");
+
+            // Actualizar la incidencia con el nombre del archivo
+            incidencia.JustificanteMedico = fileName;
+            await _ctx.SaveChangesAsync();
+
+            return Ok(new
+            {
+                id_Incidencia = incidencia.Id_Incidencia,
+                justificanteMedico = incidencia.JustificanteMedico,
+                mensaje = "Justificante médico subido correctamente"
+            });
+        }
+
+        // GET /api/incidencias/{id}/justificante
+        [HttpGet("{id:int}/justificante")]
+        public async Task<IActionResult> DescargarJustificante(int id)
+        {
+            var (idUsuario, rol) = GetAuthInfo(User);
+
+            var incidencia = await _ctx.Incidencias.FindAsync(id);
+            if (incidencia == null || string.IsNullOrEmpty(incidencia.JustificanteMedico))
+                return NotFound("Justificante no encontrado");
+
+            // Solo admin o dueño de la incidencia
+            if (rol != "admin" && incidencia.IdUsuario != idUsuario)
+                return Forbid();
+
+            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Justificantes");
+            var filePath = Path.Combine(uploadsRoot, incidencia.JustificanteMedico);
+
+            if (!System.IO.File.Exists(filePath))
+                return NotFound("Archivo no encontrado en el servidor");
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            return File(bytes, "application/pdf", incidencia.JustificanteMedico);
+        }
+
         // PUT /api/incidencias/{id}
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] Incidencia input)

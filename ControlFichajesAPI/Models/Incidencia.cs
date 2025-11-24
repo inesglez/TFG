@@ -38,5 +38,8 @@ namespace ControlFichajesAPI.Models
         
         [Column("FechaFin")]
         public string? FechaFin { get; set; }
+
+        [Column("JustificanteMedico")]
+        public string? JustificanteMedico{ get; set; }
     }
 }
