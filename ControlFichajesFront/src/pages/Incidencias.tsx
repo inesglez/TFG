@@ -3,13 +3,16 @@ import { crearIncidencia, getTodasIncidencias } from "../api/incidencias";
 import {
   Typography, Stack, TextField, Button, List,
   Chip, Box, ToggleButtonGroup, ToggleButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel, Card, Alert, Paper, Divider
+  Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select,
+  FormControl, InputLabel, Card, Alert, Paper, Divider
 } from "@mui/material";
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import EventIcon from '@mui/icons-material/Event';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PendingIcon from '@mui/icons-material/Pending';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 
 type Incidencia = {
   id_Incidencia: number;
@@ -22,6 +25,7 @@ type Incidencia = {
   fechaRespuesta?: string;
   fechaInicio?: string;
   fechaFin?: string;
+  justificanteMedico?: string | null;
 };
 
 export default function Incidencias() {
@@ -29,13 +33,15 @@ export default function Incidencias() {
   const [comentario, setComentario] = useState("");
   const [tipoReporte, setTipoReporte] = useState<"incidencia" | "solicitud">("incidencia");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [tipoSolicitud, setTipoSolicitud] = useState<"Vacaciones" | "AsuntosPropios">("Vacaciones");
+  const [tipoSolicitud, setTipoSolicitud] = useState<"Vacaciones" | "AsuntosPropios" | "Baja">("Vacaciones");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [motivoSolicitud, setMotivoSolicitud] = useState("");
-  
+  const [archivoPDF, setArchivoPDF] = useState<File | null>(null);
+
   const idUsuario = Number(localStorage.getItem("idUsuario") ?? 0);
   const rol = localStorage.getItem("rol") ?? "empleado";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5002/api";
 
   async function cargar() {
     try {
@@ -45,7 +51,7 @@ export default function Incidencias() {
       console.error("Error cargando incidencias:", error);
     }
   }
-  
+
   useEffect(() => { cargar(); }, []);
 
   async function crearIncidenciaNormal() {
@@ -70,24 +76,84 @@ export default function Incidencias() {
     const fin = new Date(fechaFin);
     const dias = Math.ceil((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    const descripcionCompleta = motivoSolicitud 
-      ? `Solicitud de ${dias} día(s). Motivo: ${motivoSolicitud}`
-      : `Solicitud de ${dias} día(s)`;
+    let descripcionCompleta = "";
+
+    if (tipoSolicitud === "Baja") {
+      descripcionCompleta = motivoSolicitud
+        ? `Baja médica de ${dias} día(s). Motivo: ${motivoSolicitud}`
+        : `Baja médica de ${dias} día(s)`;
+
+      if (archivoPDF) {
+        descripcionCompleta += ` [Justificante adjunto: ${archivoPDF.name}]`;
+      }
+    } else {
+      descripcionCompleta = motivoSolicitud
+        ? `Solicitud de ${dias} día(s). Motivo: ${motivoSolicitud}`
+        : `Solicitud de ${dias} día(s)`;
+    }
 
     try {
-      await crearIncidencia(idUsuario, descripcionCompleta, tipoSolicitud, fechaInicio, fechaFin);
-      
+      // 1. Crear incidencia y obtener la creada con su id_Incidencia
+      const nueva = await crearIncidencia(
+        idUsuario,
+        descripcionCompleta,
+        tipoSolicitud,
+        fechaInicio,
+        fechaFin
+      );
+
+      // 2. Si es Baja y hay PDF, subir justificante
+      if (tipoSolicitud === "Baja" && archivoPDF) {
+        const auth = localStorage.getItem("auth");
+        const token = auth ? JSON.parse(auth).token : null;
+
+        const formData = new FormData();
+        formData.append("archivo", archivoPDF);
+
+        const resp = await fetch(
+          `${API_URL}/incidencias/${nueva.id_Incidencia}/justificante`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: token ? `Bearer ${token}` : "",
+            },
+            body: formData,
+          }
+        );
+
+        if (!resp.ok) {
+          console.error("Error al subir justificante");
+          alert("La solicitud se creó, pero hubo un error al subir el justificante médico.");
+        }
+      }
+
       // Reset
       setDialogOpen(false);
       setFechaInicio("");
       setFechaFin("");
       setMotivoSolicitud("");
+      setArchivoPDF(null);
       await cargar();
     } catch (error) {
       console.error("Error creando solicitud:", error);
       alert("Error al crear la solicitud");
     }
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== "application/pdf") {
+        alert("Solo se permiten archivos PDF");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        alert("El archivo no puede superar los 5MB");
+        return;
+      }
+      setArchivoPDF(file);
+    }
+  };
 
   const getEstadoChip = (estado: string) => {
     switch (estado) {
@@ -108,6 +174,8 @@ export default function Incidencias() {
         return { color: "primary" as const, label: "🏖️ Vacaciones" };
       case "AsuntosPropios":
         return { color: "secondary" as const, label: "📋 Asuntos Propios" };
+      case "Baja":
+        return { color: "error" as const, label: "🏥 Baja Médica" };
       default:
         return { color: "default" as const, label: "⚠️ Incidencia" };
     }
@@ -193,7 +261,7 @@ export default function Incidencias() {
                     variant="contained"
                     onClick={crearIncidenciaNormal}
                     disabled={!idUsuario || !comentario.trim()}
-                    sx={{ 
+                    sx={{
                       minWidth: { xs: "100%", md: 150 },
                       textTransform: "none",
                       fontWeight: 600,
@@ -212,13 +280,13 @@ export default function Incidencias() {
                   fullWidth
                   size="large"
                   startIcon={<EventIcon />}
-                  sx={{ 
+                  sx={{
                     py: 1.5,
                     textTransform: "none",
                     fontWeight: 600,
                   }}
                 >
-                  Solicitar Vacaciones o Días por Asuntos Propios
+                  Solicitar Vacaciones, Asuntos Propios o Baja Médica
                 </Button>
               )}
             </Box>
@@ -265,11 +333,11 @@ export default function Incidencias() {
                 {incidencias.map((inc, idx) => {
                   const estadoChip = getEstadoChip(inc.estado);
                   const tipoChip = getTipoChip(inc.tipo);
-                  
+
                   return (
-                    <Card 
-                      key={inc.id_Incidencia} 
-                      sx={{ 
+                    <Card
+                      key={inc.id_Incidencia}
+                      sx={{
                         p: 3,
                         bgcolor: idx % 2 === 0 ? "transparent" : "rgba(0,0,0,0.01)",
                         border: "1px solid rgba(0,0,0,0.08)",
@@ -278,11 +346,11 @@ export default function Incidencias() {
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2, flexWrap: "wrap" }}>
                         <Chip label={`#${inc.id_Incidencia}`} size="small" color="primary" />
                         <Chip label={tipoChip.label} size="small" color={tipoChip.color} />
-                        <Chip 
-                          icon={estadoChip.icon} 
-                          label={estadoChip.label} 
-                          size="small" 
-                          color={estadoChip.color} 
+                        <Chip
+                          icon={estadoChip.icon}
+                          label={estadoChip.label}
+                          size="small"
+                          color={estadoChip.color}
                         />
                         <Typography variant="caption" color="text.secondary">
                           {new Date(inc.fecha).toLocaleString('es-ES')}
@@ -291,7 +359,7 @@ export default function Incidencias() {
 
                       {/* Fechas de solicitud */}
                       {inc.fechaInicio && inc.fechaFin && (
-                        <Alert severity="info" sx={{ mb: 2 }}>
+                        <Alert severity={inc.tipo === "Baja" ? "error" : "info"} sx={{ mb: 2 }}>
                           <strong>Período solicitado:</strong> {inc.fechaInicio} al {inc.fechaFin}
                         </Alert>
                       )}
@@ -301,10 +369,34 @@ export default function Incidencias() {
                         {inc.descripcion}
                       </Typography>
 
+                      {/* Justificante médico (si quieres que el empleado también pueda verlo) */}
+                      {inc.justificanteMedico && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<LocalHospitalIcon />}
+                          onClick={() =>
+                            window.open(
+                              `${API_URL}/incidencias/${inc.id_Incidencia}/justificante`,
+                              "_blank"
+                            )
+                          }
+                          sx={{ mb: 1 }}
+                        >
+                          Ver justificante médico
+                        </Button>
+                      )}
+
                       {/* Respuesta del admin */}
                       {inc.respuestaAdmin && (
-                        <Alert 
-                          severity={inc.estado === "Aprobada" ? "success" : inc.estado === "Rechazada" ? "error" : "info"}
+                        <Alert
+                          severity={
+                            inc.estado === "Aprobada"
+                              ? "success"
+                              : inc.estado === "Rechazada"
+                              ? "error"
+                              : "info"
+                          }
                           sx={{ mt: 2 }}
                         >
                           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
@@ -337,10 +429,14 @@ export default function Incidencias() {
               <Select
                 value={tipoSolicitud}
                 label="Tipo de solicitud"
-                onChange={(e) => setTipoSolicitud(e.target.value as any)}
+                onChange={(e) => {
+                  setTipoSolicitud(e.target.value as any);
+                  setArchivoPDF(null); // Reset archivo al cambiar tipo
+                }}
               >
                 <MenuItem value="Vacaciones">🏖️ Vacaciones</MenuItem>
                 <MenuItem value="AsuntosPropios">📋 Asuntos propios</MenuItem>
+                <MenuItem value="Baja">🏥 Baja médica</MenuItem>
               </Select>
             </FormControl>
 
@@ -375,9 +471,49 @@ export default function Incidencias() {
               size="small"
             />
 
+            {/* Subida de PDF solo para Baja Médica */}
+            {tipoSolicitud === "Baja" && (
+              <Box>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<AttachFileIcon />}
+                  fullWidth
+                  sx={{ textTransform: "none", fontWeight: 600 }}
+                >
+                  {archivoPDF ? archivoPDF.name : "Adjuntar justificante médico (opcional)"}
+                  <input
+                    type="file"
+                    hidden
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+                {archivoPDF && (
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                    <Chip
+                      label={archivoPDF.name}
+                      onDelete={() => setArchivoPDF(null)}
+                      color="success"
+                      size="small"
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                      {(archivoPDF.size / 1024).toFixed(1)} KB
+                    </Typography>
+                  </Stack>
+                )}
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                  Solo archivos PDF, máximo 5MB
+                </Typography>
+              </Box>
+            )}
+
             {fechaInicio && fechaFin && (
               <Chip
-                label={`Total: ${Math.ceil((new Date(fechaFin).getTime() - new Date(fechaInicio).getTime()) / (1000 * 60 * 60 * 24)) + 1} día(s)`}
+                label={`Total: ${Math.ceil(
+                  (new Date(fechaFin).getTime() - new Date(fechaInicio).getTime()) /
+                    (1000 * 60 * 60 * 24)
+                ) + 1} día(s)`}
                 color="primary"
                 sx={{ alignSelf: "flex-start" }}
               />
@@ -385,7 +521,14 @@ export default function Incidencias() {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
+          <Button
+            onClick={() => {
+              setDialogOpen(false);
+              setArchivoPDF(null);
+            }}
+          >
+            Cancelar
+          </Button>
           <Button
             variant="contained"
             onClick={crearSolicitudDias}

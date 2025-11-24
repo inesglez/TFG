@@ -11,6 +11,7 @@ export interface Incidencia {
   fechaRespuesta?: string;
   fechaInicio?: string;
   fechaFin?: string;
+  nombreUsuario?: string;
 }
 
 // 🔥 Función helper para obtener el token
@@ -35,13 +36,38 @@ export async function getPendientes(): Promise<Incidencia[]> {
   return res.json();
 }
 
-export async function getTodasIncidencias(): Promise<Incidencia[]> {
-  const res = await fetch(`${API_URL}/incidencias`, {
+// ✅ Ahora apunta a /admin/incidencias con filtros
+export async function getTodasIncidencias(params?: {
+  estado?: string;
+  idUsuario?: number;
+  tipo?: string;
+  fechaDesde?: string;
+  fechaHasta?: string;
+}): Promise<Incidencia[]> {
+  const query = new URLSearchParams();
+  if (params?.estado) query.append("estado", params.estado);
+  if (params?.idUsuario) query.append("idUsuario", params.idUsuario.toString());
+  if (params?.tipo) query.append("tipo", params.tipo);
+  if (params?.fechaDesde) query.append("fechaDesde", params.fechaDesde);
+  if (params?.fechaHasta) query.append("fechaHasta", params.fechaHasta);
+
+  const url = `${API_URL}/admin/incidencias${query.toString() ? `?${query.toString()}` : ""}`;
+
+  console.log(">>> getTodasIncidencias URL:", url); // 👈 log para debug
+
+  const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
   });
-  if (!res.ok) throw new Error("Error al obtener incidencias");
+
+  console.log(">>> getTodasIncidencias status:", res.status); // 👈 log status
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("Error getTodasIncidencias:", res.status, text);
+    throw new Error("Error al obtener incidencias");
+  }
   return res.json();
 }
 
@@ -79,13 +105,14 @@ export async function responderIncidencia(
   respuesta: string,
   estado: "Resuelta" | "Aprobada" | "Rechazada"
 ): Promise<Incidencia> {
-  const res = await fetch(`${API_URL}/incidencias/${id}/responder`, {
-    method: "PUT",
+  // 🔴 Aquí también debe ser /admin/incidencias para que funcione el PATCH
+  const res = await fetch(`${API_URL}/admin/incidencias/${id}/estado`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken()}`,
     },
-    body: JSON.stringify({ respuesta, estado }),
+    body: JSON.stringify({ estado, respuestaAdmin: respuesta }),
   });
   if (!res.ok) throw new Error("Error al responder incidencia");
   return res.json();

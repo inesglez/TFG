@@ -1,13 +1,36 @@
 import { useEffect, useState } from "react";
 import {
-  Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody,
-  Chip, Button, Stack, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Tooltip, Divider
+  Box,
+  Paper,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  Button,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Tooltip,
+  Divider,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  IconButton
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import CommentIcon from "@mui/icons-material/Comment";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ClearIcon from "@mui/icons-material/Clear";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import { getTodasIncidencias, responderIncidencia } from "../../api/incidencias";
 
 type Incidencia = {
@@ -21,6 +44,8 @@ type Incidencia = {
   fechaInicio?: string;
   fechaFin?: string;
   fechaRespuesta?: string;
+  nombreUsuario?: string;
+  justificanteMedico?: string | null;
 };
 
 export default function AdminIncidencias() {
@@ -31,11 +56,73 @@ export default function AdminIncidencias() {
   const [respuesta, setRespuesta] = useState("");
   const [accion, setAccion] = useState<"Aprobada" | "Rechazada" | "Resuelta" | null>(null);
 
+  // Estados de filtros
+  const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
+  const [filtroFechaDesde, setFiltroFechaDesde] = useState("");
+  const [filtroFechaHasta, setFiltroFechaHasta] = useState("");
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5002/api";
+
+  // Función para descargar justificante con token
+  const descargarJustificante = async (idIncidencia: number) => {
+    try {
+      const auth = localStorage.getItem("auth");
+      const token = auth ? JSON.parse(auth).token : null;
+
+      const resp = await fetch(
+        `${API_URL}/incidencias/${idIncidencia}/justificante`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        console.error("Error descargando justificante:", resp.status, text);
+        alert(`No se pudo descargar el justificante (${resp.status}): ${text}`);
+        return;
+      }
+
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      console.error("Error en descarga:", err);
+      alert("Error al descargar el justificante");
+    }
+  };
+
   async function cargar() {
     setLoading(true);
     try {
-      const data = await getTodasIncidencias();
-      setItems(data.sort((a, b) => b.id_Incidencia - a.id_Incidencia));
+      // Construir parámetros de consulta para el backend
+      const params: any = {};
+      if (filtroEstado) params.estado = filtroEstado;
+      if (filtroTipo) params.tipo = filtroTipo;
+      if (filtroFechaDesde) params.fechaDesde = filtroFechaDesde;
+      if (filtroFechaHasta) params.fechaHasta = filtroFechaHasta;
+
+      const data = await getTodasIncidencias(params);
+
+      // Filtro por nombre/ID en frontend
+      let resultado: Incidencia[] = data;
+      if (filtroNombre.trim()) {
+        const busqueda = filtroNombre.toLowerCase();
+        resultado = resultado.filter(
+          (i: Incidencia) =>
+            i.idUsuario.toString().includes(busqueda) ||
+            i.nombreUsuario?.toLowerCase().includes(busqueda)
+        );
+      }
+
+      setItems(resultado);
     } catch (err) {
       console.error(err);
     } finally {
@@ -43,7 +130,28 @@ export default function AdminIncidencias() {
     }
   }
 
-  useEffect(() => { cargar(); }, []);
+  // Recarga cuando cambian filtros de backend
+  useEffect(() => {
+    cargar();
+  }, [filtroEstado, filtroTipo, filtroFechaDesde, filtroFechaHasta]);
+
+  // Debounce del filtro de nombre
+  useEffect(() => {
+    if (!filtroNombre.trim()) {
+      cargar();
+    } else {
+      const timer = setTimeout(() => cargar(), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [filtroNombre]);
+
+  function limpiarFiltros() {
+    setFiltroNombre("");
+    setFiltroTipo("");
+    setFiltroEstado("");
+    setFiltroFechaDesde("");
+    setFiltroFechaHasta("");
+  }
 
   async function abrirDialogo(id: number, estado: "Aprobada" | "Rechazada" | "Resuelta") {
     setSelectedId(id);
@@ -53,15 +161,17 @@ export default function AdminIncidencias() {
   }
 
   async function confirmarAccion() {
-    if (!selectedId || !accion) return;
+    if (selectedId === null || !accion) return;
     try {
       await responderIncidencia(selectedId, respuesta, accion);
+    } catch (err) {
+      console.error("Error al actualizar incidencia:", err);
+    } finally {
       setDialogOpen(false);
       setRespuesta("");
       setAccion(null);
+      setSelectedId(null);
       await cargar();
-    } catch (err) {
-      console.error("Error al actualizar incidencia:", err);
     }
   }
 
@@ -77,6 +187,9 @@ export default function AdminIncidencias() {
         return { color: "warning" as const, label: "Pendiente" };
     }
   };
+
+  const hayFiltrosActivos =
+    filtroNombre || filtroTipo || filtroEstado || filtroFechaDesde || filtroFechaHasta;
 
   return (
     <Box
@@ -105,22 +218,142 @@ export default function AdminIncidencias() {
       >
         {/* Header */}
         <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#f8fafc" }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 700,
-              color: "text.primary",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Incidencias y Solicitudes
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Gestiona las solicitudes de vacaciones e incidencias reportadas
-          </Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Box>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  color: "text.primary",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Incidencias y Solicitudes
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Gestiona las solicitudes de vacaciones e incidencias reportadas
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={1}>
+              {hayFiltrosActivos && (
+                <Tooltip title="Limpiar filtros">
+                  <IconButton onClick={limpiarFiltros} color="error" size="small">
+                    <ClearIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Button
+                variant={mostrarFiltros ? "contained" : "outlined"}
+                startIcon={<FilterListIcon />}
+                onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                size="small"
+              >
+                Filtros
+              </Button>
+            </Stack>
+          </Stack>
         </Box>
 
         <Divider />
+
+        {/* Filtros */}
+        {mostrarFiltros && (
+          <>
+            <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#fafbfc" }}>
+              {/* Fila 1: usuario + tipo + estado */}
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mb: 2 }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    label="Buscar usuario"
+                    placeholder="Nombre o ID"
+                    fullWidth
+                    size="small"
+                    value={filtroNombre}
+                    onChange={(e) => setFiltroNombre(e.target.value)}
+                  />
+                </Box>
+
+                <Box sx={{ flex: 1 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Tipo</InputLabel>
+                    <Select
+                      value={filtroTipo}
+                      label="Tipo"
+                      onChange={(e) => setFiltroTipo(e.target.value)}
+                    >
+                      <MenuItem value="">Todos</MenuItem>
+                      <MenuItem value="Vacaciones">Vacaciones</MenuItem>
+                      <MenuItem value="AsuntosPropios">Asuntos propios</MenuItem>
+                      <MenuItem value="Incidencia">Incidencia</MenuItem>
+                      <MenuItem value="Baja">Baja</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+
+                <Box sx={{ flex: 1 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Estado</InputLabel>
+                    <Select
+                      value={filtroEstado}
+                      label="Estado"
+                      onChange={(e) => setFiltroEstado(e.target.value)}
+                    >
+                      <MenuItem value="">Todos</MenuItem>
+                      <MenuItem value="Pendiente">Pendiente</MenuItem>
+                      <MenuItem value="Aprobada">Aprobada</MenuItem>
+                      <MenuItem value="Rechazada">Rechazada</MenuItem>
+                      <MenuItem value="Resuelta">Resuelta</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Stack>
+
+              {/* Fila 2: fechas */}
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mb: 1 }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    label="Desde"
+                    type="date"
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                    value={filtroFechaDesde}
+                    onChange={(e) => setFiltroFechaDesde(e.target.value)}
+                  />
+                </Box>
+
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    label="Hasta"
+                    type="date"
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                    value={filtroFechaHasta}
+                    onChange={(e) => setFiltroFechaHasta(e.target.value)}
+                  />
+                </Box>
+              </Stack>
+
+              {hayFiltrosActivos && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Mostrando {items.length} incidencia(s)
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+            <Divider />
+          </>
+        )}
 
         {/* Content */}
         <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
@@ -131,10 +364,12 @@ export default function AdminIncidencias() {
           ) : items.length === 0 ? (
             <Box sx={{ py: 8, textAlign: "center" }}>
               <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-                No hay incidencias
+                {hayFiltrosActivos ? "No hay resultados" : "No hay incidencias"}
               </Typography>
               <Typography color="text.secondary">
-                No se han registrado incidencias pendientes.
+                {hayFiltrosActivos
+                  ? "Intenta ajustar los filtros para ver más resultados"
+                  : "No se han registrado incidencias pendientes."}
               </Typography>
             </Box>
           ) : (
@@ -148,6 +383,7 @@ export default function AdminIncidencias() {
                     <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Rango</TableCell>
                     <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Descripción</TableCell>
                     <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Estado</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Justificante</TableCell>
                     <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Respuesta</TableCell>
                     <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Fecha</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>
@@ -167,7 +403,9 @@ export default function AdminIncidencias() {
                         }}
                       >
                         <TableCell>#{i.id_Incidencia}</TableCell>
-                        <TableCell>{i.idUsuario}</TableCell>
+                        <TableCell>
+                          {i.nombreUsuario || `Usuario ${i.idUsuario}`}
+                        </TableCell>
                         <TableCell>
                           <Chip
                             label={i.tipo}
@@ -198,6 +436,23 @@ export default function AdminIncidencias() {
                         <TableCell>
                           <Chip color={chip.color} label={chip.label} size="small" />
                         </TableCell>
+
+                        {/* Columna justificante */}
+                        <TableCell>
+                          {i.justificanteMedico ? (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<LocalHospitalIcon />}
+                              onClick={() => descargarJustificante(i.id_Incidencia)}
+                            >
+                              Ver PDF
+                            </Button>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+
                         <TableCell>
                           {i.respuestaAdmin ? (
                             <Tooltip title={i.respuestaAdmin}>
