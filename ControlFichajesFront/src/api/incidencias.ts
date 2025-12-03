@@ -14,7 +14,7 @@ export interface Incidencia {
   nombreUsuario?: string;
 }
 
-// 🔥 Función helper para obtener el token
+// Función helper para obtener el token
 function getToken(): string | null {
   const auth = localStorage.getItem("auth");
   if (!auth) return null;
@@ -36,7 +36,6 @@ export async function getPendientes(): Promise<Incidencia[]> {
   return res.json();
 }
 
-// ✅ Ahora apunta a /admin/incidencias con filtros
 export async function getTodasIncidencias(params?: {
   estado?: string;
   idUsuario?: number;
@@ -99,7 +98,6 @@ export async function responderIncidencia(
   respuesta: string,
   estado: "Resuelta" | "Aprobada" | "Rechazada"
 ): Promise<Incidencia> {
-  // 🔴 Aquí también debe ser /admin/incidencias para que funcione el PATCH
   const res = await fetch(`${API_URL}/admin/incidencias/${id}/estado`, {
     method: "PATCH",
     headers: {

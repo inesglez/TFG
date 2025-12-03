@@ -64,21 +64,24 @@ export default function Login() {
       >
         {/* Header con logo */}
         <Box sx={{ textAlign: "center", mb: 4 }}>
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 2,
-              bgcolor: "primary.main",
-              display: "grid",
-              placeItems: "center",
-              mx: "auto",
-              mb: 2,
-              boxShadow: "0 4px 12px rgba(37,99,235,0.3)",
-            }}
-          >
-            <AccessTimeIcon sx={{ color: "white", fontSize: 32 }} />
-          </Box>
+         <Box
+  sx={{
+    width: 56,
+    height: 56,
+    borderRadius: 2,
+    display: "grid",
+    placeItems: "center",
+    mx: "auto",
+    mb: 2,
+    overflow: "hidden",
+  }}
+>
+  <img 
+    src="/controlFichaje.png" 
+    alt="Logo Control Fichajes" 
+    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+  />
+</Box>
           <Typography
             variant="h5"
             sx={{

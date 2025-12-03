@@ -61,7 +61,7 @@ export function getToken(): string | null {
   return auth?.token || null;
 }
 
-// ✅ FUNCIÓN: Login con el backend
+// FUNCIÓN: Login con el backend
 export type LoginResponse = {
   idUsuario: number;
   nombre: string;
