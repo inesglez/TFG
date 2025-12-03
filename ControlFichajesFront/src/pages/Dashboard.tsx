@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!idUsuario) return;
-    getHistorial(idUsuario).then(setItems).catch(console.error);
+    getHistorial(idUsuario).then(setItems).catch(() => {});
   }, [idUsuario]);
 
   const totalPausa = useMemo(

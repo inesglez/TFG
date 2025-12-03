@@ -20,13 +20,19 @@ export default function AdminCrearUsuario() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5002/api/admin/crear-usuario", {
+      const response = await fetch("http://localhost:5002/api/admin/usuarios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ nombre, apellido, correo, password, rol }),
+        body: JSON.stringify({ 
+          Nombre: nombre, 
+          Apellido: apellido, 
+          Correo: correo, 
+          Password: password, 
+          Rol: rol 
+        }),
       });
 
       const data = await response.json();

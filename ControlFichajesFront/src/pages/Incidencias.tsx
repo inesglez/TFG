@@ -48,7 +48,7 @@ export default function Incidencias() {
       const data = await getTodasIncidencias();
       setIncidencias(data);
     } catch (error) {
-      console.error("Error cargando incidencias:", error);
+      // Error al cargar incidencias
     }
   }
 
@@ -61,7 +61,6 @@ export default function Incidencias() {
       setComentario("");
       await cargar();
     } catch (error) {
-      console.error("Error creando incidencia:", error);
       alert("Error al crear la incidencia");
     }
   }
@@ -122,7 +121,6 @@ export default function Incidencias() {
         );
 
         if (!resp.ok) {
-          console.error("Error al subir justificante");
           alert("La solicitud se creó, pero hubo un error al subir el justificante médico.");
         }
       }
@@ -135,7 +133,6 @@ export default function Incidencias() {
       setArchivoPDF(null);
       await cargar();
     } catch (error) {
-      console.error("Error creando solicitud:", error);
       alert("Error al crear la solicitud");
     }
   }

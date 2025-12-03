@@ -39,7 +39,7 @@ export default function AdminHome() {
   const upSm = useMediaQuery(theme.breakpoints.up("sm"));
 
   useEffect(() => {
-    getFichajesHoy().then(setItems).catch(console.error);
+    getFichajesHoy().then(setItems).catch(() => {});
   }, []);
 
   const total = useMemo(() => items.length, [items]);

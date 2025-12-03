@@ -67,7 +67,7 @@ export default function AdminUsuarios() {
       const data = await response.json();
       setList(data);
     } catch (error) {
-      console.error("Error cargando usuarios:", error);
+      // Error cargando usuarios
     } finally {
       setLoading(false);
     }
@@ -149,7 +149,6 @@ export default function AdminUsuarios() {
       setPdfFechaInicio("");
       setPdfFechaFin("");
     } catch (error) {
-      console.error("Error descargando PDF:", error);
       alert("Error al descargar el PDF");
     }
   }

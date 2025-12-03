@@ -53,19 +53,13 @@ export async function getTodasIncidencias(params?: {
 
   const url = `${API_URL}/admin/incidencias${query.toString() ? `?${query.toString()}` : ""}`;
 
-  console.log(">>> getTodasIncidencias URL:", url); // 👈 log para debug
-
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
   });
 
-  console.log(">>> getTodasIncidencias status:", res.status); // 👈 log status
-
   if (!res.ok) {
-    const text = await res.text();
-    console.error("Error getTodasIncidencias:", res.status, text);
     throw new Error("Error al obtener incidencias");
   }
   return res.json();

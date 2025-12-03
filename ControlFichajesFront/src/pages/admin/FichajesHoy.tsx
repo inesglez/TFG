@@ -37,8 +37,6 @@ export default function FichajesHoy() {
       const hoy = new Date().toISOString().split('T')[0];
       const data = await getHistorial(undefined as any, hoy, hoy);
       
-      console.log('📊 Datos recibidos:', data);
-      
       const fichajesNormalizados = data.map((f: any) => ({
         id_Fichaje: f.id_Fichaje || f.Id_Fichaje,
         idUsuario: f.idUsuario || f.IdUsuario,
@@ -48,12 +46,9 @@ export default function FichajesHoy() {
         tiempo_Pausa: f.tiempo_Pausa || f.Tiempo_Pausa || 0
       }));
       
-      console.log('📊 Fichajes normalizados:', fichajesNormalizados);
-      
       setFichajes(fichajesNormalizados);
       setError(null);
     } catch (err: any) {
-      console.error('❌ Error:', err);
       setError(err.message || 'Error al cargar fichajes');
     } finally {
       setLoading(false);
@@ -61,10 +56,7 @@ export default function FichajesHoy() {
   };
 
   const calcularHorasTrabajadas = (entrada: string | null, salida: string | null, pausa: number) => {
-    console.log('🔢 Calculando:', { entrada, salida, pausa });
-    
     if (!entrada || !salida || entrada === 'null' || salida === 'null') {
-      console.log('⚠️ Falta entrada o salida');
       return '-';
     }
     
@@ -73,17 +65,13 @@ export default function FichajesHoy() {
       const salidaLimpia = salida.substring(0, 5);
       
       if (!entradaLimpia.includes(':') || !salidaLimpia.includes(':')) {
-        console.log('⚠️ Formato inválido');
         return '-';
       }
       
       const [hE, mE] = entradaLimpia.split(':').map(Number);
       const [hS, mS] = salidaLimpia.split(':').map(Number);
       
-      console.log('🔢 Parseado:', { hE, mE, hS, mS });
-      
       if (isNaN(hE) || isNaN(mE) || isNaN(hS) || isNaN(mS)) {
-        console.log('⚠️ Valores no numéricos');
         return '-';
       }
       
@@ -91,10 +79,7 @@ export default function FichajesHoy() {
       const minutosSalida = hS * 60 + mS;
       const minutosTotales = minutosSalida - minutosEntrada - (pausa || 0);
       
-      console.log('🔢 Minutos:', { minutosEntrada, minutosSalida, minutosTotales });
-      
       if (minutosTotales < 0) {
-        console.log('⚠️ Resultado negativo');
         return '-';
       }
       
@@ -102,11 +87,9 @@ export default function FichajesHoy() {
       const minutos = minutosTotales % 60;
       
       const resultado = `${horas}h ${minutos}m`;
-      console.log('✅ Resultado:', resultado);
       
       return resultado;
     } catch (error) {
-      console.error('❌ Error calculando horas:', error);
       return '-';
     }
   };

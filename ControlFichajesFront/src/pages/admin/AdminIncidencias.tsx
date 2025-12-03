@@ -84,7 +84,6 @@ export default function AdminIncidencias() {
 
       if (!resp.ok) {
         const text = await resp.text();
-        console.error("Error descargando justificante:", resp.status, text);
         alert(`No se pudo descargar el justificante (${resp.status}): ${text}`);
         return;
       }
@@ -94,7 +93,6 @@ export default function AdminIncidencias() {
       window.open(url, "_blank");
       setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
     } catch (err) {
-      console.error("Error en descarga:", err);
       alert("Error al descargar el justificante");
     }
   };
@@ -165,7 +163,7 @@ export default function AdminIncidencias() {
     try {
       await responderIncidencia(selectedId, respuesta, accion);
     } catch (err) {
-      console.error("Error al actualizar incidencia:", err);
+      // Error al actualizar incidencia
     } finally {
       setDialogOpen(false);
       setRespuesta("");

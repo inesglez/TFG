@@ -12,18 +12,14 @@ export async function ficharEntrada(idUsuario: number, fecha?: string) {
 
 export async function ficharSalida(idUsuario: number) {
   const hoy = new Date().toISOString().split('T')[0];
-  console.log("🔍 Buscando fichajes para:", { idUsuario, hoy });
   
   const historial = await getHistorial(idUsuario, hoy, hoy);
-  console.log("📋 Historial recibido:", historial);
   
   if (!historial || historial.length === 0) {
-    console.error("❌ No hay entrada registrada hoy");
     throw new Error("No hay entrada registrada hoy");
   }
   
   const fichaje = historial[0];
-  console.log("✅ Fichaje a actualizar:", fichaje);
   
   const payload = {
     Id_Fichaje: fichaje.id_Fichaje,
@@ -33,8 +29,6 @@ export async function ficharSalida(idUsuario: number) {
     Hora_Salida: new Date().toTimeString().slice(0, 8),
     Tiempo_Pausa: fichaje.tiempo_Pausa || 0
   };
-  
-  console.log("📤 Enviando PUT con:", payload);
   
   return api.put(`/fichajes/${fichaje.id_Fichaje}`, payload);
 }
@@ -67,7 +61,6 @@ export async function iniciarPausa(idUsuario: number) {
   localStorage.setItem('pausa_inicio', new Date().toISOString());
   localStorage.setItem('pausa_fichaje_id', fichaje.id_Fichaje.toString());
   
-  console.log("⏸️ Pausa iniciada");
   return { message: "Pausa iniciada" };
 }
 
@@ -92,8 +85,6 @@ export async function finalizarPausa(idUsuario: number) {
   const fin = new Date();
   const minutosTranscurridos = Math.floor((fin.getTime() - inicio.getTime()) / 60000);
   
-  console.log(`⏱️ Pausa duró ${minutosTranscurridos} minutos`);
-  
   // Sumar al tiempo de pausa existente
   const tiempoPausaTotal = (fichaje.tiempo_Pausa || 0) + minutosTranscurridos;
   
@@ -105,8 +96,6 @@ export async function finalizarPausa(idUsuario: number) {
     Hora_Salida: fichaje.hora_Salida,
     Tiempo_Pausa: tiempoPausaTotal
   };
-  
-  console.log("📤 Actualizando pausa:", payload);
   
   // Limpiar localStorage
   localStorage.removeItem('pausa_inicio');
