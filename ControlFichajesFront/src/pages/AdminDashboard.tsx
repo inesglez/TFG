@@ -114,11 +114,17 @@ export default function AdminDashboard() {
               fontWeight: 700,
               letterSpacing: "-0.02em",
               mb: 0.5,
+              color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit",
             }}
           >
             Panel de administración
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body1" 
+            sx={{
+              color: (theme) => theme.palette.mode === "dark" ? "#e5e7eb" : "text.secondary",
+            }}
+          >
             Gestiona usuarios, incidencias y revisa los fichajes de hoy.
           </Typography>
         </Box>

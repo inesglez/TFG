@@ -375,16 +375,16 @@ export default function AdminIncidencias() {
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>ID</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Usuario</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Tipo</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Rango</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Descripción</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Estado</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Justificante</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Respuesta</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Fecha</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>ID</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Usuario</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Tipo</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Rango</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Descripción</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Estado</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Justificante</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Respuesta</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Fecha</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>
                       Acciones
                     </TableCell>
                   </TableRow>

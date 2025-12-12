@@ -26,7 +26,7 @@ export default function Login() {
     try {
       const resp = await login(usuario, password);
       setAuth(resp);
-      navigate(resp.rol === "admin" ? "/admin" : "/");
+      navigate(resp.rol === "admin" ? "/admin" : "/usuario");
     } catch (e: any) {
       setError(e?.response?.data ?? "Credenciales inválidas");
     } finally {

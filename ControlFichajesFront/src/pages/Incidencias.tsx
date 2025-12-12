@@ -144,7 +144,7 @@ export default function Incidencias() {
         alert("Solo se permiten archivos PDF");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB
+      if (file.size > 5 * 1024 * 1024) { 
         alert("El archivo no puede superar los 5MB");
         return;
       }
@@ -168,13 +168,13 @@ export default function Incidencias() {
   const getTipoChip = (tipo: string) => {
     switch (tipo) {
       case "Vacaciones":
-        return { color: "primary" as const, label: "🏖️ Vacaciones" };
+        return { color: "primary" as const, label: "Vacaciones" };
       case "AsuntosPropios":
-        return { color: "secondary" as const, label: "📋 Asuntos Propios" };
+        return { color: "secondary" as const, label: "Asuntos Propios" };
       case "Baja":
-        return { color: "error" as const, label: "🏥 Baja Médica" };
+        return { color: "error" as const, label: "Baja Médica" };
       default:
-        return { color: "default" as const, label: "⚠️ Incidencia" };
+        return { color: "default" as const, label: "Incidencia" };
     }
   };
 
@@ -431,9 +431,9 @@ export default function Incidencias() {
                   setArchivoPDF(null); // Reset archivo al cambiar tipo
                 }}
               >
-                <MenuItem value="Vacaciones">🏖️ Vacaciones</MenuItem>
-                <MenuItem value="AsuntosPropios">📋 Asuntos propios</MenuItem>
-                <MenuItem value="Baja">🏥 Baja médica</MenuItem>
+                <MenuItem value="Vacaciones">Vacaciones</MenuItem>
+                <MenuItem value="AsuntosPropios">Asuntos propios</MenuItem>
+                <MenuItem value="Baja">Baja médica</MenuItem>
               </Select>
             </FormControl>
 

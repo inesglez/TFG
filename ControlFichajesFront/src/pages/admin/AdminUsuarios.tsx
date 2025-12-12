@@ -179,18 +179,24 @@ export default function AdminUsuarios() {
         }}
       >
         {/* Header */}
-        <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#f8fafc" }}>
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc" }}>
           <Typography
             variant="h5"
             sx={{
               fontWeight: 700,
-              color: "text.primary",
+              color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "text.primary",
               letterSpacing: "-0.02em",
             }}
           >
             Gestión de Usuarios
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              mt: 0.5,
+              color: (theme) => theme.palette.mode === "dark" ? "#e5e7eb" : "text.secondary",
+            }}
+          >
             Administra usuarios, roles y permisos del sistema
           </Typography>
         </Box>
@@ -198,7 +204,7 @@ export default function AdminUsuarios() {
         <Divider />
 
         {/* Filtros */}
-        <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, bgcolor: "#fafbfc" }}>
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Stack spacing={2}>
             <TextField
               label="Buscar por nombre, apellido o correo"
@@ -206,6 +212,16 @@ export default function AdminUsuarios() {
               onChange={(e) => setBuscar(e.target.value)}
               fullWidth
               size="small"
+              sx={{
+                '& .MuiInputLabel-root': {
+                  color: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                  },
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -223,6 +239,16 @@ export default function AdminUsuarios() {
                 onChange={(e) => setFiltroRol(e.target.value as any)}
                 fullWidth
                 size="small"
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                    },
+                  },
+                }}
               >
                 <MenuItem value="todos">Todos</MenuItem>
                 <MenuItem value="admin">Administradores</MenuItem>
@@ -236,6 +262,16 @@ export default function AdminUsuarios() {
                 onChange={(e) => setFiltroActivo(e.target.value as any)}
                 fullWidth
                 size="small"
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                    },
+                  },
+                }}
               >
                 <MenuItem value="todos">Todos</MenuItem>
                 <MenuItem value="activo">Activos</MenuItem>
@@ -249,6 +285,16 @@ export default function AdminUsuarios() {
                 onChange={(e) => setOrdenar(e.target.value as any)}
                 fullWidth
                 size="small"
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: (theme) => theme.palette.mode === "dark" ? "#000000" : undefined,
+                    },
+                  },
+                }}
               >
                 <MenuItem value="nombre">Nombre</MenuItem>
                 <MenuItem value="apellido">Apellido</MenuItem>
@@ -281,13 +327,13 @@ export default function AdminUsuarios() {
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>ID</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Nombre</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Apellido</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Correo</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Rol</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>Estado</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: "#f8fafc" }}>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>ID</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Nombre</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Apellido</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Correo</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Rol</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>Estado</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, bgcolor: (theme) => theme.palette.mode === "dark" ? "grey.50" : "#f8fafc", color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit" }}>
                       Acciones
                     </TableCell>
                   </TableRow>
@@ -309,6 +355,14 @@ export default function AdminUsuarios() {
                         <Chip 
                           size="small" 
                           label={u.rol} 
+                          sx={(theme) => ({
+                            bgcolor: u.rol === "admin" 
+                              ? undefined 
+                              : theme.palette.mode === "dark" ? "#6b7280" : undefined,
+                            color: u.rol === "admin" 
+                              ? undefined 
+                              : theme.palette.mode === "dark" ? "#ffffff" : undefined,
+                          })}
                           color={u.rol === "admin" ? "secondary" : "default"}
                           icon={u.rol === "admin" ? <AdminPanelSettingsIcon /> : <PersonIcon />}
                         />
@@ -317,6 +371,14 @@ export default function AdminUsuarios() {
                         <Chip 
                           size="small" 
                           label={u.activo ? "Activo" : "Inactivo"} 
+                          sx={(theme) => ({
+                            bgcolor: u.activo 
+                              ? undefined 
+                              : theme.palette.mode === "dark" ? "#6b7280" : undefined,
+                            color: u.activo 
+                              ? undefined 
+                              : theme.palette.mode === "dark" ? "#ffffff" : undefined,
+                          })}
                           color={u.activo ? "success" : "default"} 
                         />
                       </TableCell>
@@ -336,13 +398,25 @@ export default function AdminUsuarios() {
                           </Tooltip>
 
                           <Tooltip title="Editar usuario" arrow>
-                            <IconButton size="small" onClick={() => { setEditing(u); setOpenEdit(true); }}>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => { setEditing(u); setOpenEdit(true); }}
+                              sx={(theme) => ({
+                                color: theme.palette.mode === "dark" ? "#6b7280" : undefined,
+                              })}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           
                           <Tooltip title="Eliminar usuario" arrow>
-                            <IconButton size="small" onClick={() => { setEditing(u); setOpenDelete(true); }}>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => { setEditing(u); setOpenDelete(true); }}
+                              sx={(theme) => ({
+                                color: theme.palette.mode === "dark" ? "#6b7280" : undefined,
+                              })}
+                            >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
@@ -351,7 +425,9 @@ export default function AdminUsuarios() {
                             <IconButton 
                               size="small" 
                               onClick={() => toggleRol(u)}
-                              color={u.rol === "admin" ? "secondary" : "default"}
+                              sx={(theme) => ({
+                                color: theme.palette.mode === "dark" ? "#6b7280" : u.rol === "admin" ? theme.palette.secondary.main : undefined,
+                              })}
                             >
                               {u.rol === "admin" ? <AdminPanelSettingsIcon fontSize="small" /> : <PersonIcon fontSize="small" />}
                             </IconButton>

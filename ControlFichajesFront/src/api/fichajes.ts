@@ -41,7 +41,7 @@ export async function getHistorial(idUsuario: number, desde?: string, hasta?: st
   return data;
 }
 
-// 🆕 Iniciar pausa
+//Iniciar pausa
 export async function iniciarPausa(idUsuario: number) {
   const hoy = new Date().toISOString().split('T')[0];
   const historial = await getHistorial(idUsuario, hoy, hoy);
@@ -64,7 +64,7 @@ export async function iniciarPausa(idUsuario: number) {
   return { message: "Pausa iniciada" };
 }
 
-// 🆕 Finalizar pausa
+// Finalizar pausa
 export async function finalizarPausa(idUsuario: number) {
   const hoy = new Date().toISOString().split('T')[0];
   const historial = await getHistorial(idUsuario, hoy, hoy);

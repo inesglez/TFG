@@ -15,23 +15,23 @@ export type UsuarioLite = {
 export type FichajeAdmin = {
   id_Fichaje: number;
   usuario: UsuarioLite;
-  fecha: string;           // ISO
-  hora_Entrada?: string;   // "HH:mm" o ISO
+  fecha: string;          
+  hora_Entrada?: string;  
   hora_Salida?: string;
-  tiempo_Pausa: number;    // minutos
+  tiempo_Pausa: number;   
   tipo_Jornada: string;
 };
 
 export type IncidenciaAdmin = {
   id: number;
   usuario: UsuarioLite;
-  fecha: string;           // ISO
+  fecha: string;          
   tipo: string;
   descripcion: string;
   estado: "pendiente" | "resuelta" | "en_proceso";
 };
 
-// ---------- FICHAJES ----------
+//FICHAJES
 export async function getFichajesHoy(): Promise<FichajeAdmin[]> {
   const { data } = await http.get<FichajeAdmin[]>("/admin/fichajes/hoy");
   return data;
@@ -44,7 +44,7 @@ export async function getFichajesRango(desdeISO: string, hastaISO: string): Prom
   return data;
 }
 
-// ---------- INCIDENCIAS ----------
+//INCIDENCIAS
 export async function getIncidenciasAdmin(
   estado?: "pendiente" | "resuelta" | "en_proceso"
 ): Promise<IncidenciaAdmin[]> {
@@ -61,7 +61,7 @@ export async function updateEstadoIncidencia(
   await http.patch(`/admin/incidencias/${id}/estado`, { estado });
 }
 
-// ---------- USUARIOS ----------
+// USUARIOS
 export async function getUsuarios(): Promise<UsuarioLite[]> {
   const { data } = await http.get<UsuarioLite[]>("/admin/usuarios");
   return data;

@@ -11,14 +11,12 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useState } from "react";
 
-// Contexto de tema
 import { useColorModeContext } from "./theme/ColorModeContext";
 
 // Autenticación
 import { getAuth, isAdmin, clearAuth, isLoggedIn } from "./api/auth";
 import { PrivateRoute, AdminRoute } from "./components/RouteGuards";
 
-// Páginas
 import Dashboard from "./pages/Dashboard";
 import Fichar from "./pages/Fichar";
 import Incidencias from "./pages/Incidencias";
@@ -57,12 +55,11 @@ function TopBar() {
         elevation={0}
         sx={{
           bgcolor: "background.paper",
-          borderBottom: "1px solid",
-          borderColor: "divider",
           backdropFilter: "blur(8px)",
           backgroundColor: mode === "light"
             ? "rgba(255,255,255,0.9)"
-            : "rgba(17,24,39,0.9)",
+            : "rgba(31,41,55,0.95)",
+          borderBottom: mode === "dark" ? "1px solid rgba(75,85,99,0.3)" : "none",
         }}
       >
         <Container maxWidth="xl">
@@ -73,7 +70,7 @@ function TopBar() {
   sx={{
     width: 40,
     height: 40,
-    borderRadius: 2,
+    borderRadius: 0,
     display: "grid",
     placeItems: "center",
     overflow: "hidden",
@@ -120,7 +117,7 @@ function TopBar() {
             {/* Navegación */}
             {isLoggedIn() && (
               <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1 }}>
-                <Button component={Link} to="/" sx={navBtn}>
+                <Button component={Link} to={isAdmin() ? "/admin" : "/usuario"} sx={navBtn}>
                   Inicio
                 </Button>
                 {!isAdmin() && (
@@ -155,7 +152,7 @@ function TopBar() {
                 onClick={toggleMode}
                 aria-label="Cambiar tema"
                 sx={{
-                  color: "text.primary",
+                  color: mode === "dark" ? "#ffffff" : "text.primary",
                   "&:hover": { bgcolor: "action.hover" },
                 }}
               >
@@ -271,7 +268,7 @@ function TopBar() {
           <ListItem disablePadding>
             <ListItemButton
               onClick={() => {
-                navigate("/");
+                navigate(isAdmin() ? "/admin" : "/usuario");
                 setDrawerOpen(false);
               }}
             >
@@ -344,7 +341,7 @@ function TopBar() {
 
 // Estilos comunes para botones de navegación
 const navBtn = {
-  color: "text.primary",
+  color: "#ffffff",
   textTransform: "none",
   fontWeight: 600,
   px: 2,

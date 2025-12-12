@@ -60,7 +60,16 @@ export default function AdminCrearUsuario() {
 
   return (
     <Paper sx={{ p: { xs: 2, sm: 3 }, width: "100%", maxWidth: 600, mx: "auto", borderRadius: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Crear Nuevo Usuario</Typography>
+      <Typography 
+        variant="h5" 
+        sx={{ 
+          fontWeight: 700, 
+          mb: 2,
+          color: (theme) => theme.palette.mode === "dark" ? "#ffffff" : "inherit",
+        }}
+      >
+        Crear Nuevo Usuario
+      </Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }}>Usuario creado exitosamente. Redirigiendo...</Alert>}

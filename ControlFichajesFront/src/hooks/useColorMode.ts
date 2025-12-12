@@ -26,21 +26,23 @@ export function useColorMode() {
               background: { default: "#e6e6ecff", paper: "#ffffff" },
               text: { primary: "#0f172a", secondary: "#475569" },
               divider: "rgba(15, 23, 42, 0.08)",
+              grey: { 50: "#f8fafc", 100: "#f1f5f9", 200: "#e2e8f0" },
             }
           : {
               mode: "dark",
-              primary: { main: "#90caf9", light: "#b3dafb", dark: "#5f8ab2", contrastText: "#081018" },
-              secondary: { main: "#f59e0b", light: "#fbbf24", dark: "#d97706", contrastText: "#0b0f19" },
+              primary: { main: "#5184f1ff", light: "#5b8cfa", dark: "#1e4fc0", contrastText: "#ffffff" },
+              secondary: { main: "#f97316", light: "#ff9a4a", dark: "#c85b11", contrastText: "#ffffff" },
               background: { default: "#0b0f19", paper: "#111827" },
-              text: { primary: "#e5e7eb", secondary: "#9ca3af" },
+              text: { primary: "#0f172a", secondary: "#475569" },
               divider: "rgba(229, 231, 235, 0.12)",
+              grey: { 50: "#1f2937", 100: "#374151", 200: "#4b5563" },
             },
         typography: {
           fontFamily: `Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif`,
           h5: { fontWeight: 600 },
           button: { textTransform: "none", fontWeight: 600 },
         },
-        shape: { borderRadius: 12 },
+        shape: { borderRadius: 0 },
         components: {
           MuiCssBaseline: {
             styleOverrides: {
@@ -52,7 +54,7 @@ export function useColorMode() {
           MuiPaper: {
             styleOverrides: {
               root: {
-                borderRadius: 14,
+                borderRadius: 0,
                 boxShadow:
                   mode === "light"
                     ? "0 1px 2px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.08)"
@@ -63,7 +65,7 @@ export function useColorMode() {
           MuiTypography: {
             styleOverrides: {
               root: {
-                color: mode === "light" ? "#0f172a" : "#e5e7eb",
+                color: mode === "light" ? "#0f172a" : "#0f172a",
               },
             },
           },
@@ -90,8 +92,39 @@ export function useColorMode() {
               head: { fontWeight: 600, color: mode === "light" ? "#0f172a" : "#e5e7eb" },
             },
           },
-          MuiChip: { styleOverrides: { root: { borderRadius: 8 } } },
-          MuiButton: { defaultProps: { variant: "contained" }, styleOverrides: { root: { borderRadius: 10 } } },
+          MuiChip: { styleOverrides: { root: { borderRadius: 0 } } },
+          MuiButton: { defaultProps: { variant: "contained" }, styleOverrides: { root: { borderRadius: 0 } } },
+          MuiInputLabel: {
+            styleOverrides: {
+              root: {
+                color: mode === "light" ? undefined : "#e5e7eb",
+              },
+            },
+          },
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                color: mode === "light" ? undefined : "#ffffff",
+              },
+            },
+          },
+          MuiMenuItem: {
+            styleOverrides: {
+              root: {
+                color: mode === "light" ? "#0f172a" : "#ffffff",
+                "&:hover": {
+                  backgroundColor: mode === "light" ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.08)",
+                },
+              },
+            },
+          },
+          MuiMenu: {
+            styleOverrides: {
+              paper: {
+                backgroundColor: mode === "light" ? "#ffffff" : "#1f2937",
+              },
+            },
+          },
         },
       }),
     [mode]

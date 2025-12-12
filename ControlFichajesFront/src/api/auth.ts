@@ -11,16 +11,13 @@ export type AuthUser = {
 
 const AUTH_KEY = "auth";
 
-/**
- * Guarda la información del usuario autenticado en localStorage
- */
+//Guarda la información del usuario autenticado en localStorage
 export function setAuth(user: AuthUser): void {
   localStorage.setItem(AUTH_KEY, JSON.stringify(user));
 }
 
-/**
- * Obtiene la información del usuario autenticado desde localStorage
- */
+//Obtiene la información del usuario autenticado desde localStorage
+
 export function getAuth(): AuthUser | null {
   const raw = localStorage.getItem(AUTH_KEY);
   if (!raw) return null;
@@ -31,31 +28,23 @@ export function getAuth(): AuthUser | null {
   }
 }
 
-/**
- * Elimina la información del usuario autenticado (logout)
- */
+// Elimina la información del usuario autenticado (logout)
 export function clearAuth(): void {
   localStorage.removeItem(AUTH_KEY);
 }
 
-/**
- * Verifica si hay un usuario autenticado
- */
+// Verifica si hay un usuario autenticado
 export function isLoggedIn(): boolean {
   return getAuth() !== null;
 }
 
-/**
- * Verifica si el usuario autenticado es administrador
- */
+// Verifica si el usuario autenticado es administrador
 export function isAdmin(): boolean {
   const auth = getAuth();
   return auth?.rol === "admin";
 }
 
-/**
- * Obtiene el token del usuario autenticado (útil para headers de API)
- */
+// Obtiene el token del usuario autenticado (útil para headers de API)
 export function getToken(): string | null {
   const auth = getAuth();
   return auth?.token || null;

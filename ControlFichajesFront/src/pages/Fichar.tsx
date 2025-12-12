@@ -32,23 +32,23 @@ export default function Fichar() {
   const handleEntrada = async () => {
     try {
       await ficharEntrada(idUsuario);
-      setMensaje({ tipo: 'success', texto: '✅ Entrada registrada correctamente' });
+      setMensaje({ tipo: 'success', texto: ' Entrada registrada correctamente' });
     } catch (error: any) {
-      setMensaje({ tipo: 'error', texto: `❌ ${error.message || 'Error al fichar entrada'}` });
+      setMensaje({ tipo: 'error', texto: ` ${error.message || 'Error al fichar entrada'}` });
     }
   };
 
   const handleSalida = async () => {
     try {
       if (enPausa) {
-        setMensaje({ tipo: 'error', texto: '⚠️ Debes reanudar la pausa antes de fichar salida' });
+        setMensaje({ tipo: 'error', texto: 'Debes reanudar la pausa antes de fichar salida' });
         return;
       }
       
       await ficharSalida(idUsuario);
-      setMensaje({ tipo: 'success', texto: '✅ Salida registrada correctamente' });
+      setMensaje({ tipo: 'success', texto: ' Salida registrada correctamente' });
     } catch (error: any) {
-      setMensaje({ tipo: 'error', texto: `❌ ${error.message || 'Error al fichar salida'}` });
+      setMensaje({ tipo: 'error', texto: ` ${error.message || 'Error al fichar salida'}` });
     }
   };
 
@@ -58,14 +58,14 @@ export default function Fichar() {
         await finalizarPausa(idUsuario);
         setEnPausa(false);
         setTiempoPausa(0);
-        setMensaje({ tipo: 'success', texto: '✅ Pausa finalizada' });
+        setMensaje({ tipo: 'success', texto: 'Pausa finalizada' });
       } else {
         await iniciarPausa(idUsuario);
         setEnPausa(true);
-        setMensaje({ tipo: 'success', texto: '⏸️ Pausa iniciada' });
+        setMensaje({ tipo: 'success', texto: 'Pausa iniciada' });
       }
     } catch (error: any) {
-      setMensaje({ tipo: 'error', texto: `❌ ${error.message || 'Error con la pausa'}` });
+      setMensaje({ tipo: 'error', texto: ` ${error.message || 'Error con la pausa'}` });
     }
   };
 
@@ -132,7 +132,7 @@ export default function Fichar() {
           
           {enPausa && (
             <Alert severity="warning" sx={{ mb: 3 }}>
-              ⏸️ Pausa activa: <strong>{tiempoPausa} minuto{tiempoPausa !== 1 ? 's' : ''}</strong>
+              Pausa activa: <strong>{tiempoPausa} minuto{tiempoPausa !== 1 ? 's' : ''}</strong>
             </Alert>
           )}
           

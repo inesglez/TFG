@@ -72,7 +72,7 @@ const userEmail = auth?.email || "Sin correo configurado";
     }
 
     try {
-      // TODO: Llamar al backend para cambiar la contraseña
+      //  Llamar al backend para cambiar la contraseña
       // await api.post("/Usuarios/cambiar-password", { currentPassword, newPassword });
       
       setSuccess("Contraseña cambiada correctamente");
@@ -339,7 +339,6 @@ const userEmail = auth?.email || "Sin correo configurado";
       >
         <DialogTitle>Selecciona tu avatar</DialogTitle>
         <DialogContent>
-          {/* ✅ Usando Box con CSS Grid en lugar de Grid de MUI */}
           <Box
             sx={{
               display: "grid",
