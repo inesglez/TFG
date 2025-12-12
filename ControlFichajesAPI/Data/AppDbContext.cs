@@ -13,19 +13,16 @@ namespace ControlFichajesAPI.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Logging temporal para ver las consultas SQL exactas
-            optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
-            optionsBuilder.EnableSensitiveDataLogging();
+            // Configuration if needed
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Por claridad, fijamos el esquema por defecto a public
             modelBuilder.HasDefaultSchema("public");
 
-            // ========== Usuario ==========
+            //Usuario 
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.ToTable("Usuarios");
@@ -40,10 +37,10 @@ namespace ControlFichajesAPI.Data
                 entity.Property(e => e.Estado).HasColumnName("Estado");
             });
 
-            // ========== Fichaje ==========
+            //Fichaje 
             modelBuilder.Entity<Fichaje>(entity =>
             {
-                entity.ToTable("fichajes"); // ← Tabla en minúsculas
+                entity.ToTable("fichajes"); 
                 entity.HasKey(e => e.Id_Fichaje);
 
                 entity.Property(e => e.Id_Fichaje).HasColumnName("id_fichaje");
@@ -54,7 +51,7 @@ namespace ControlFichajesAPI.Data
                 entity.Property(e => e.Tiempo_Pausa).HasColumnName("tiempo_pausa");
             });
 
-            // ========== Incidencia ==========
+            //Incidencia 
             modelBuilder.Entity<Incidencia>(entity =>
             {
                 entity.ToTable("Incidencias");

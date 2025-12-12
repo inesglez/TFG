@@ -56,7 +56,7 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
         IdUsuario = user.Id_Usuario,
         Nombre = user.Nombre,
         Rol = user.Rol,
-        Email = user.Correo, // ✅ AGREGAR ESTA LÍNEA
+        Email = user.Correo, 
         Token = token
     };
 

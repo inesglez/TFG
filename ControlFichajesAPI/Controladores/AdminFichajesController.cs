@@ -4,7 +4,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using QuestPDF.Helpers;
 using ControlFichajesAPI.Data;
-using ControlFichajesAPI.Models; // o Entidades, según dónde esté Fichaje.cs
+using ControlFichajesAPI.Models;
 
 namespace ControlFichajesAPI.Controladores
 {
@@ -15,29 +15,29 @@ namespace ControlFichajesAPI.Controladores
         private readonly AppDbContext _ctx;
         public AdminFichajesController(AppDbContext ctx) => _ctx = ctx;
 
-        // ✅ Tu código actual (GetHoy, GetRango) permanece igual...
-
-
-        // ✅ --- Nuevo endpoint para generar PDF ---
+        // endpoint para generar PDF
         [HttpGet("pdf/{idUsuario}")]
         public async Task<IActionResult> DescargarPdfFichajes(
             int idUsuario,
             [FromQuery] DateTime? fechaInicio,
             [FromQuery] DateTime? fechaFin)
         {
+            // 1 Obtener los datos - Buscar el usuario
             var usuario = await _ctx.Usuarios
                 .FirstOrDefaultAsync(u => u.Id_Usuario == idUsuario);
 
             if (usuario == null)
                 return NotFound(new { message = "Usuario no encontrado" });
 
+            // Buscar sus fichajes con filtros de fecha
             var query = _ctx.Fichajes
                 .Where(f => f.IdUsuario == idUsuario);
 
-            // Aplicar filtros de fechas
+            // Aplicar filtros de fechas si hay fecha inicio
             if (fechaInicio.HasValue)
                 query = query.Where(f => f.Fecha.Date >= fechaInicio.Value.Date);
 
+            // Si hay fecha fin
             if (fechaFin.HasValue)
                 query = query.Where(f => f.Fecha.Date <= fechaFin.Value.Date);
 
@@ -52,18 +52,23 @@ namespace ControlFichajesAPI.Controladores
             {
                 container.Page(page =>
                 {
+                    // Tamaño A4
                     page.Size(PageSizes.A4);
+                    // Márgenes
                     page.Margin(2, Unit.Centimetre);
                     page.PageColor(Colors.White);
+                    // Tamaño de letra por defecto
                     page.DefaultTextStyle(x => x.FontSize(10));
 
                     // Encabezado del PDF
                     page.Header()
                         .Column(column =>
                         {
+                            // Título grande y azul
                             column.Item().Text("Historial de fichajes")
                                 .Bold().FontSize(20)
                                 .FontColor(Colors.Blue.Darken2);
+                            // Nombre del usuario
                             column.Item().Text($"{usuario.Nombre} {usuario.Apellido}")
                                 .FontSize(14);
                             column.Item().Text($"Correo: {usuario.Correo}")
@@ -84,22 +89,24 @@ namespace ControlFichajesAPI.Controladores
                                 column.Item().Text("Historial completo").Italic().FontSize(10);
                             }
 
+                            // Línea horizontal separadora
                             column.Item().PaddingVertical(5).LineHorizontal(1);
                         });
 
                     // Tabla de fichajes
                     page.Content().Table(table =>
                     {
+                        // Definir 5 columnas con sus anchos
                         table.ColumnsDefinition(columns =>
                         {
-                            columns.ConstantColumn(80);
-                            columns.ConstantColumn(60);
-                            columns.ConstantColumn(60);
-                            columns.ConstantColumn(60);
-                            columns.ConstantColumn(80);
+                            columns.ConstantColumn(80);  // Fecha
+                            columns.ConstantColumn(60);  // Entrada
+                            columns.ConstantColumn(60);  // Salida
+                            columns.ConstantColumn(60);  // Pausa
+                            columns.ConstantColumn(80);  // Horas
                         });
 
-                        // Cabeceras
+                        // Cabeceras en negrita
                         table.Header(header =>
                         {
                             header.Cell().Text("Fecha").Bold();
@@ -109,6 +116,7 @@ namespace ControlFichajesAPI.Controladores
                             header.Cell().Text("Horas").Bold();
                         });
 
+                        // Agregar cada fichaje como fila
                         foreach (var f in fichajes)
                         {
                             var horas = CalcularHoras(f);
@@ -126,8 +134,9 @@ namespace ControlFichajesAPI.Controladores
                         .AlignCenter()
                         .Text($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}");
                 });
-            }).GeneratePdf();
+            }).GeneratePdf();  // Convierte todo a bytes[]
 
+            // Generar y devolver el PDF como descarga
             var nombreArchivo = $"Fichajes_{usuario.Nombre}_{usuario.Apellido}_{DateTime.Now:yyyyMMdd}.pdf";
             return File(pdf, "application/pdf", nombreArchivo);
         }

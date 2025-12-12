@@ -81,7 +81,6 @@ namespace ControlFichajesAPI.Controladores
             if (idUsuario.HasValue)
                 q = q.Where(f => f.IdUsuario == idUsuario.Value);
 
-            // ✅ CORRECCIÓN DEFINITIVA - Con UTC porque tu columna es 'timestamp with time zone'
             if (!string.IsNullOrWhiteSpace(desde) && DateTime.TryParse(desde, out var dDesde))
             {
                 var desdeUtc = DateTime.SpecifyKind(dDesde.Date, DateTimeKind.Utc);
@@ -106,18 +105,8 @@ namespace ControlFichajesAPI.Controladores
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Fichaje dto)
         {
-            // DEBUG: Claims del token
-            Console.WriteLine("===== CLAIMS DEL TOKEN =====");
-            foreach (var claim in User.Claims)
-                Console.WriteLine($"{claim.Type}: {claim.Value}");
-            Console.WriteLine("============================");
-
             var (idUsuario, rol) = GetAuthInfo(User);
 
-            Console.WriteLine($"[DEBUG] idUsuario del token: {idUsuario}, rol: {rol}");
-            Console.WriteLine($"[DEBUG] dto.IdUsuario recibido: {dto.IdUsuario}");
-
-            // Asignación robusta de IdUsuario
             if (rol == "admin")
             {
                 if (dto.IdUsuario <= 0)
@@ -133,9 +122,6 @@ namespace ControlFichajesAPI.Controladores
                 dto.IdUsuario = idUsuario.Value;
             }
 
-            Console.WriteLine($"[DEBUG] dto.IdUsuario FINAL antes de guardar: {dto.IdUsuario}");
-
-            // ✅ Defaults coherentes - CON UTC porque tu columna es 'timestamp with time zone'
             dto.Fecha = dto.Fecha == default
                 ? DateTime.SpecifyKind(DateTime.Now.Date, DateTimeKind.Utc)
                 : DateTime.SpecifyKind(dto.Fecha.Date, DateTimeKind.Utc);
@@ -145,11 +131,7 @@ namespace ControlFichajesAPI.Controladores
 
             dto.Tiempo_Pausa ??= 0;
 
-            // LOG: conexión efectiva y proveedor (para confirmar BD y schema)
-            Console.WriteLine($"[DEBUG] Connection: {_ctx.Database.GetDbConnection().ConnectionString}");
-            Console.WriteLine($"[DEBUG] Provider:   {_ctx.Database.ProviderName}");
-            Console.WriteLine($"[DEBUG] Justo antes de Save: IdUsuario={dto.IdUsuario}, Fecha={dto.Fecha:yyyy-MM-dd}, HE={dto.Hora_Entrada}, HS={dto.Hora_Salida}, TP={dto.Tiempo_Pausa}");
-
+         
             _ctx.Fichajes.Add(dto);
             await _ctx.SaveChangesAsync();
 
@@ -170,7 +152,6 @@ namespace ControlFichajesAPI.Controladores
             if (rol != "admin" && db.IdUsuario != idUsuario)
                 return Forbid();
 
-            // ✅ Con SpecifyKind porque tu columna es 'timestamp with time zone'
             db.Fecha = DateTime.SpecifyKind(input.Fecha.Date, DateTimeKind.Utc);
             db.Hora_Entrada = input.Hora_Entrada;
             db.Hora_Salida = input.Hora_Salida;

@@ -13,7 +13,7 @@ namespace ControlFichajesAPI.Models
         [Column("id_usuario")]
         public int IdUsuario { get; set; }
 
-        [Column("fecha", TypeName = "date")]  // 🔥 CAMBIO AQUÍ
+        [Column("fecha", TypeName = "date")]  
         public DateTime Fecha { get; set; }
 
         [Column("hora_entrada")]

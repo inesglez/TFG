@@ -47,7 +47,7 @@ namespace ControlFichajesAPI.Controladores
                     fechaInicio = i.FechaInicio,
                     fechaFin = i.FechaFin,
                     fechaRespuesta = i.FechaRespuesta,
-                    justificanteMedico = i.JustificanteMedico  // ← AÑADIDO
+                    justificanteMedico = i.JustificanteMedico 
                 };
 
             // Parseo de fechas
@@ -98,7 +98,7 @@ namespace ControlFichajesAPI.Controladores
                     fechaRespuesta = x.fechaRespuesta != null
                         ? x.fechaRespuesta.Value.ToString("yyyy-MM-dd")
                         : null,
-                    justificanteMedico = x.justificanteMedico  // ← AÑADIDO
+                    justificanteMedico = x.justificanteMedico 
                 })
                 .ToListAsync();
 

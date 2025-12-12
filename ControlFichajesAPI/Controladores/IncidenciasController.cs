@@ -50,27 +50,18 @@ namespace ControlFichajesAPI.Controladores
         {
             var (idUsuario, rol) = GetAuthInfo(User);
 
-            Console.WriteLine($"[DEBUG] GetPendientes - Usuario: {idUsuario}, Rol: {rol}");
-
             IQueryable<Incidencia> query = _ctx.Incidencias.AsNoTracking();
 
             if (rol != "admin")
             {
                 if (idUsuario == null) return Forbid();
                 query = query.Where(i => i.IdUsuario == idUsuario.Value);
-                Console.WriteLine($"[DEBUG] Filtrando por IdUsuario: {idUsuario.Value}");
-            }
-            else
-            {
-                Console.WriteLine("[DEBUG] Admin - Mostrando TODAS las incidencias");
             }
 
             var pendientes = await query
                 .Where(i => i.Estado == "Pendiente")
                 .OrderByDescending(i => i.Fecha)
                 .ToListAsync();
-
-            Console.WriteLine($"[DEBUG] Total incidencias encontradas: {pendientes.Count}");
 
             return Ok(pendientes);
         }
@@ -96,9 +87,6 @@ namespace ControlFichajesAPI.Controladores
         {
             var (idUsuario, rol) = GetAuthInfo(User);
 
-            Console.WriteLine($"[DEBUG] Create - Usuario: {idUsuario}, Rol: {rol}");
-            Console.WriteLine($"[DEBUG] DTO recibido: IdUsuario={dto.IdUsuario}, Tipo={dto.Tipo}, Descripcion={dto.Descripcion}");
-
             if (rol != "admin")
             {
                 if (idUsuario == null) return Forbid();
@@ -119,8 +107,6 @@ namespace ControlFichajesAPI.Controladores
             _ctx.Incidencias.Add(dto);
             await _ctx.SaveChangesAsync();
 
-            Console.WriteLine($"[DEBUG] Incidencia creada con ID: {dto.Id_Incidencia}");
-
             return CreatedAtAction(nameof(GetById), new { id = dto.Id_Incidencia }, dto);
         }
 
@@ -130,8 +116,6 @@ namespace ControlFichajesAPI.Controladores
         public async Task<IActionResult> SubirJustificante(int id, IFormFile archivo)
         {
             var (idUsuario, rol) = GetAuthInfo(User);
-
-            Console.WriteLine($"[DEBUG] SubirJustificante - Incidencia: {id}, Usuario: {idUsuario}, Rol: {rol}");
 
             if (archivo == null || archivo.Length == 0)
                 return BadRequest("Archivo vacío o no proporcionado");
@@ -163,8 +147,6 @@ namespace ControlFichajesAPI.Controladores
             {
                 await archivo.CopyToAsync(stream);
             }
-
-            Console.WriteLine($"[DEBUG] Archivo guardado: {filePath}");
 
             // Actualizar la incidencia con el nombre del archivo
             incidencia.JustificanteMedico = fileName;
@@ -252,8 +234,6 @@ namespace ControlFichajesAPI.Controladores
             incidencia.FechaRespuesta = DateTime.UtcNow;
 
             await _ctx.SaveChangesAsync();
-
-            Console.WriteLine($"[DEBUG] Incidencia {id} respondida: Estado={dto.Estado}, Respuesta={dto.Respuesta}");
 
             return Ok(incidencia);
         }
